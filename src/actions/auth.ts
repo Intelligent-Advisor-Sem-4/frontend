@@ -49,13 +49,12 @@ export async function login(_previousState: string, formData: FormData): Promise
     }
 
     try {
-        // Create a server-side axios instance to call the backend
-        console.log(process.env.BACKEND_BASE_URL);
-
         const response = await AxiosInstance.post<LoginResponse>('/auth/login', {
             username,
             password
         });
+        console.log(response);
+
         await createSession(response.data);
 
 
@@ -64,14 +63,18 @@ export async function login(_previousState: string, formData: FormData): Promise
     } catch (error) {
         // Type narrowing for the axios error
         if (axios.isAxiosError(error)) {
-            const errorData = error.response?.data as HTTPValidationError | undefined;
+            console.log(error.response?.data);
+            const errorData = error.response?.data as HTTPValidationError | { detail?: string };
 
-            if (errorData?.detail && errorData.detail.length > 0) {
+            if (Array.isArray(errorData?.detail) && errorData.detail.length > 0) {
+                console.error(errorData.detail);
                 return errorData.detail[0].msg;
+            } else if (typeof errorData?.detail === "string") {
+                return errorData.detail;
             } else if (error.response?.status === 404) {
                 return "Invalid credentials";
             } else {
-                console.error('Login API error:', error.response?.data);
+                console.error("Login API error:", error.response?.data);
                 return "Failed to login. Please try again.";
             }
         }

@@ -22,6 +22,8 @@ export interface User {
     username: string;
     name: string;
     email: string;
+    role: string;
+    user_id: string;
     avatar?: string;
 }
 

@@ -38,6 +38,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 Create a `.env` file in the root directory.
 
 - **`BACKEND_BASE_URL`**: Base URL for the API (e.g., `https://api.example.com`)..
+- For local development, you can use `http://localhost:8000` if your FastAPI server is running locally. If localhost not
+  working try http://127.0.0.1:8000
 
 ### 🗂️ App Directory Convention
 
@@ -97,25 +99,25 @@ Example:
 
 ```ts
 {
-	title: "Group 40 - Risk & Compliance",
-		url
+    title: "Group 40 - Risk & Compliance",
+        url
 :
-	"/group-40",
-		icon
+    "/group-40",
+        icon
 :
-	Scale,
-		items
+    Scale,
+        items
 :
-	[
-		{
-			title: "Risk Analysis",
-			url: "/group-40/risk",
-		},
-		{
-			title: "Fairness & Bias",
-			url: "/group-40/fairness",
-		},
-	],
+    [
+        {
+            title: "Risk Analysis",
+            url: "/group-40/risk",
+        },
+        {
+            title: "Fairness & Bias",
+            url: "/group-40/fairness",
+        },
+    ],
 }
 ```
 
@@ -201,7 +203,7 @@ The sidebar has its own color variants to allow for independent styling:
 
 ```tsx
 <div className="bg-accent p-2 rounded-md">
-	<p className="text-accent-foreground">Pro tip: Use keyboard shortcuts</p>
+    <p className="text-accent-foreground">Pro tip: Use keyboard shortcuts</p>
 </div>
 ```
 
@@ -224,7 +226,7 @@ The sidebar has its own color variants to allow for independent styling:
 
 ```tsx
 <main className="bg-background text-foreground">
-	<h1>Welcome to the dashboard</h1>
+    <h1>Welcome to the dashboard</h1>
 </main>
 ```
 
@@ -237,7 +239,7 @@ The sidebar has its own color variants to allow for independent styling:
 
 ```tsx
 <div className="border border-border rounded-md p-4">
-	<h3>Card Title</h3>
+    <h3>Card Title</h3>
 </div>
 ```
 
@@ -258,8 +260,8 @@ The sidebar has its own color variants to allow for independent styling:
 
 ```tsx
 <BarChart>
-	<Bar dataKey="value" fill="var(--chart-1)"/>
-	<Bar dataKey="comparison" fill="var(--chart-2)"/>
+    <Bar dataKey="value" fill="var(--chart-1)"/>
+    <Bar dataKey="comparison" fill="var(--chart-2)"/>
 </BarChart>
 ```
 
