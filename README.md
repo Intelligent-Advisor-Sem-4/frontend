@@ -1,6 +1,7 @@
 # Intelligent Advisor for Personal Finance & Investment
 
-This is a Next.js project designed for Group 40 – **Financial Risk & Compliance Monitoring**, part of the AI-based Investment Assistant.
+This is a Next.js project designed for Group 40 – **Financial Risk & Compliance Monitoring**, part of the AI-based
+Investment Assistant.
 
 ---
 
@@ -24,19 +25,34 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Project Structure & Guidelines
 
+### Current intended data flow
+
+- **Frontend**: Client side (Next.js)
+- **NextJs**: NextJS server using server actions
+- **Backend**: API server (FastAPI) using REST API
+
+(if you prefer direct backend calls let's discuss this in the group)
+
+### ENV File Guidelines
+
+Create a `.env` file in the root directory.
+
+- **`BACKEND_BASE_URL`**: Base URL for the API (e.g., `https://api.example.com`)..
+
 ### 🗂️ App Directory Convention
 
 Each group (37, 38, 39, 40) should maintain their own working area inside the `app/` folder. Inside their group folder:
 
 - Create:
-   - `_components/` – for UI components
-   - `_utils/` – for helper functions
-   - `_services/` – for API or data fetching logic (if needed)
-   - `_types/` – for custom TypeScript interfaces/types
+    - `_components/` – for UI components
+    - `_utils/` – for helper functions
+    - `_services/` – for API or data fetching logic (if needed)
+    - `_types/` – for custom TypeScript interfaces/types
 
 This modular separation helps maintain code isolation and avoids merge conflicts.
 
 Example:
+
 ```
 app/
 └── group-40/
@@ -52,11 +68,14 @@ app/
 ### 🧩 UI & Tooling Guidelines
 
 - **Use [Shadcn/ui](https://ui.shadcn.com)** components as much as possible for consistent and modern UI.
-- **⚠️ Note:** Avoid using Shadcn dropdowns inside Dialogs (both AlertDialog and Dialog) – they currently have a bug. Use a custom or alternative dropdown in those cases.
-- Use **[Lucide Icons](https://lucide.dev/icons)** for all icons (`lucide-react`). Only fallback to `react-icons` if a specific icon is unavailable.
+- **⚠️ Note:** Avoid using Shadcn dropdowns inside Dialogs (both AlertDialog and Dialog) – they currently have a bug.
+  Use a custom or alternative dropdown in those cases.
+- Use **[Lucide Icons](https://lucide.dev/icons)** for all icons (`lucide-react`). Only fallback to `react-icons` if a
+  specific icon is unavailable.
 - Use **[Recharts](https://recharts.org/en-US)** for visualizations.
 - Use **[React Toastify](https://fkhadra.github.io/react-toastify/introduction)** for toast notifications.
 - Use **[Framer Motion](https://www.framer.com/docs/introduction/)** for animations.
+- Use **[Date-fns](https://date-fns.org/)** for date formatting and manipulation.
 
 ---
 
@@ -78,49 +97,60 @@ Example:
 
 ```ts
 {
-  title: "Group 40 - Risk & Compliance",
-  url: "/group-40",
-  icon: Scale,
-  items: [
-    {
-      title: "Risk Analysis",
-      url: "/group-40/risk",
-    },
-    {
-      title: "Fairness & Bias",
-      url: "/group-40/fairness",
-    },
-  ],
+	title: "Group 40 - Risk & Compliance",
+		url
+:
+	"/group-40",
+		icon
+:
+	Scale,
+		items
+:
+	[
+		{
+			title: "Risk Analysis",
+			url: "/group-40/risk",
+		},
+		{
+			title: "Fairness & Bias",
+			url: "/group-40/fairness",
+		},
+	],
 }
 ```
+
 ---
 
 # Theming and Color System Guide
 
-Your project uses a sophisticated theming system based on Tailwind CSS with custom color variables and dark mode support. This guide explains how to use colors effectively, modify the theme, and maintain consistency across components.
+Your project uses a sophisticated theming system based on Tailwind CSS with custom color variables and dark mode
+support. This guide explains how to use colors effectively, modify the theme, and maintain consistency across
+components.
 
 ## Color System Overview
 
-The theme uses semantic color variables that represent purpose rather than specific hues. This makes it easier to maintain consistency and adapt the UI for different contexts.
+The theme uses semantic color variables that represent purpose rather than specific hues. This makes it easier to
+maintain consistency and adapt the UI for different contexts.
 
 ### Core Color Categories
 
-| Category | Purpose | Usage Examples |
-|----------|---------|----------------|
-| `primary` | Main brand/action color | Buttons, active states, primary CTAs |
-| `secondary` | Supporting color | Secondary buttons, backgrounds, highlights |
-| `muted` | Subdued visual elements | Backgrounds, disabled states, subtle UI elements |
-| `accent` | Highlight/emphasis | Highlights, notifications, badges |
-| `destructive` | Warning/deletion | Delete buttons, errors, critical alerts |
-| `background` | Page background | Main content areas |
-| `foreground` | Text on background | Body text, headings |
-| `border` | UI boundaries | Dividers, input fields, cards |
-| `ring` | Focus indicators | Interactive element focus states |
-| `chart-1` through `chart-5` | Data visualization | Graph elements, charts, data points |
+| Category                    | Purpose                 | Usage Examples                                   |
+|-----------------------------|-------------------------|--------------------------------------------------|
+| `primary`                   | Main brand/action color | Buttons, active states, primary CTAs             |
+| `secondary`                 | Supporting color        | Secondary buttons, backgrounds, highlights       |
+| `muted`                     | Subdued visual elements | Backgrounds, disabled states, subtle UI elements |
+| `accent`                    | Highlight/emphasis      | Highlights, notifications, badges                |
+| `destructive`               | Warning/deletion        | Delete buttons, errors, critical alerts          |
+| `background`                | Page background         | Main content areas                               |
+| `foreground`                | Text on background      | Body text, headings                              |
+| `border`                    | UI boundaries           | Dividers, input fields, cards                    |
+| `ring`                      | Focus indicators        | Interactive element focus states                 |
+| `chart-1` through `chart-5` | Data visualization      | Graph elements, charts, data points              |
 
 ### Sidebar-Specific Colors
 
 The sidebar has its own color variants to allow for independent styling:
+
 - `sidebar` - Sidebar background
 - `sidebar-foreground` - Text in sidebar
 - `sidebar-primary` - Active items in sidebar
@@ -129,6 +159,7 @@ The sidebar has its own color variants to allow for independent styling:
 ## When to Use Each Color Type
 
 ### Primary (`primary`, `primary-foreground`)
+
 - Use for main call-to-action buttons
 - Active navigation items
 - Any element you want users to focus on
@@ -139,6 +170,7 @@ The sidebar has its own color variants to allow for independent styling:
 ```
 
 ### Secondary (`secondary`, `secondary-foreground`)
+
 - Secondary actions or buttons
 - Alternative selection states
 - Supporting UI elements
@@ -149,6 +181,7 @@ The sidebar has its own color variants to allow for independent styling:
 ```
 
 ### Muted (`muted`, `muted-foreground`)
+
 - Subdued backgrounds
 - Less important text
 - Disabled states
@@ -160,6 +193,7 @@ The sidebar has its own color variants to allow for independent styling:
 ```
 
 ### Accent (`accent`, `accent-foreground`)
+
 - Highlights that aren't primary actions
 - Tags or badges
 - Special callouts
@@ -167,11 +201,12 @@ The sidebar has its own color variants to allow for independent styling:
 
 ```tsx
 <div className="bg-accent p-2 rounded-md">
-  <p className="text-accent-foreground">Pro tip: Use keyboard shortcuts</p>
+	<p className="text-accent-foreground">Pro tip: Use keyboard shortcuts</p>
 </div>
 ```
 
 ### Destructive (`destructive`)
+
 - Delete/remove buttons
 - Error messages
 - Warning indicators
@@ -182,17 +217,19 @@ The sidebar has its own color variants to allow for independent styling:
 ```
 
 ### Background/Foreground (`background`, `foreground`)
+
 - Page backgrounds
 - Main content text
 - Base layer of UI
 
 ```tsx
 <main className="bg-background text-foreground">
-  <h1>Welcome to the dashboard</h1>
+	<h1>Welcome to the dashboard</h1>
 </main>
 ```
 
 ### Border (`border`)
+
 - Divider lines
 - Input field borders
 - Card boundaries
@@ -200,27 +237,29 @@ The sidebar has its own color variants to allow for independent styling:
 
 ```tsx
 <div className="border border-border rounded-md p-4">
-  <h3>Card Title</h3>
+	<h3>Card Title</h3>
 </div>
 ```
 
 ### Ring (`ring`)
+
 - Focus states for accessibility
 - Selected items highlight
 
 ```tsx
-<input className="focus:ring-2 focus:ring-ring" />
+<input className="focus:ring-2 focus:ring-ring"/>
 ```
 
 ### Chart Colors (`chart-1` through `chart-5`)
+
 - Data visualizations
 - Graph elements
 - Different data series in charts
 
 ```tsx
 <BarChart>
-  <Bar dataKey="value" fill="var(--chart-1)" />
-  <Bar dataKey="comparison" fill="var(--chart-2)" />
+	<Bar dataKey="value" fill="var(--chart-1)"/>
+	<Bar dataKey="comparison" fill="var(--chart-2)"/>
 </BarChart>
 ```
 
@@ -236,22 +275,23 @@ Example of changing the primary color:
 
 ```css
 :root {
-  /* Original */
-  --primary: oklch(0.547 0.246 262.866);
-  
-  /* Modified - changed to a blue tone */
-  --primary: oklch(0.547 0.246 230.0);
+    /* Original */
+    --primary: oklch(0.547 0.246 262.866);
+
+    /* Modified - changed to a blue tone */
+    --primary: oklch(0.547 0.246 230.0);
 }
 
 .dark {
-  /* Also update the dark mode variant */
-  --primary: oklch(0.619 0.207 230.0);
+    /* Also update the dark mode variant */
+    --primary: oklch(0.619 0.207 230.0);
 }
 ```
 
 ### Using OKLCH Color Format
 
-The theme uses OKLCH color format which offers better perceptual uniformity and a wider gamut than traditional RGB or HSL. When modifying colors:
+The theme uses OKLCH color format which offers better perceptual uniformity and a wider gamut than traditional RGB or
+HSL. When modifying colors:
 
 - First value (0-1): Lightness
 - Second value: Chroma (color intensity)
@@ -296,7 +336,8 @@ You can also use opacity modifiers:
 5. **Limit accent colors** to avoid visual confusion
 6. **Ensure sufficient contrast** between text and backgrounds
 
-By following these guidelines, you'll maintain a consistent, accessible, and visually appealing UI that adapts well to both light and dark modes.
+By following these guidelines, you'll maintain a consistent, accessible, and visually appealing UI that adapts well to
+both light and dark modes.
 
 ---
 
