@@ -57,13 +57,19 @@ Example:
 
 ```
 app/
-└── group-40/
+└── forecast/
     ├── page.tsx
     ├── _components/
     ├── _utils/
     ├── _services/
     └── _types/
 ```
+
+---
+
+## 🔷 Types
+
+Common types used for the project are located in `src/lib/types/*`. This file contains:
 
 ---
 
@@ -329,6 +335,232 @@ You can also use opacity modifiers:
 <div className="bg-primary/90">Semi-transparent</div>
 ```
 
+---
+
+## 🌱Seed data
+
+Currently when reset-database called there will be two dummy user created with the following credentials:
+
+### User
+
+- **Username:** `johndoe`
+- **Password:** `123`
+
+### Admin
+
+- **Username:** `johnsmith`
+- **Password:** `admin123`
+
+---
+
+## 🔒Authentication helper functions
+
+The frontend includes two utility functions to help manage user authentication using cookies and backend verification.
+
+### `getCurrentUser() - src/actions/auth.ts`
+
+This function reads the `user` cookie and parses it to retrieve the current logged-in user's data.
+
+**Usage:**
+
+- Use this when you just need to access the **locally stored** user details (e.g., to conditionally render UI, get
+  username, or role).
+- This does **not** contact the backend, so it **doesn't verify** if the user session is valid on the server.
+
+---
+
+### `verifyUser() - src/actions/auth.ts`
+
+This function:
+
+1. Gets the current user from the cookie using `getCurrentUser()`.
+2. Sends a POST request to `/auth/verify` on the backend to **validate** the user's session and data (e.g., user ID,
+   username, role).
+3. Returns the verified user if everything matches; otherwise, logs out the user.
+
+**Usage:**
+
+- Call this when you need to ensure that the user is **genuinely authenticated** and the cookie hasn't been tampered
+  with.
+- Useful for **protected pages**, **role validation**, and **critical operations**.
+
+**Important:**  
+As of now, the backend `/auth/verify` route is **not yet implemented**, so this function will fail until the backend
+logic is ready. You can still safely use `getCurrentUser()` until then.
+
+---
+
+## 🛜 Data Fetching
+
+This project provides two different approaches for data fetching:
+
+1. **Client-side fetching** - For components running in the browser
+2. **Server-side fetching** - For Server Components and Server Actions
+
+## Setup
+
+All API utilities are preconfigured to handle authentication headers and error states automatically.
+
+## Client-side Data Fetching
+
+Use the `useAPI` hook in client components for data fetching with SWR's caching and revalidation capabilities.
+
+```typescript
+// Client Component
+'use client';
+
+import { useAPI } from '@/hooks/useAPI';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export default function Profile() {
+  // Basic usage
+  const { data, error, isLoading } = useAPI<User>('/api/users/profile');
+  
+  // With query parameters
+  const { data: posts } = useAPI<Post[]>('/api/posts', {
+    params: { limit: 10 }
+  });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  
+  return (
+    <div>
+      <h1>Welcome, {data?.name}</h1>
+      {/* Rest of your component */}
+    </div>
+  );
+}
+```
+
+For one-off requests or mutations, you can use the Axios client directly:
+
+```typescript
+import ClientAxiosInstance from '@/lib/client-axios';
+
+// Example POST request
+async function createPost(postData) {
+  try {
+    const response = await ClientAxiosInstance.post('/api/posts', postData);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to create post:', error);
+    throw error;
+  }
+}
+```
+
+See a complete example at `localhost:3000/test` in the application.
+
+## Server-side Data Fetching
+
+For Server Components or Server Actions, use the server-side Axios instance:
+
+```typescript
+// Server Component or Server Action
+'use server';
+
+import AxiosInstance from '@/lib/server-axios';
+
+// Example GET request
+export async function getServerSideData() {
+  try {
+    const response = await AxiosInstance.get('/api/protected-data');
+    return response.data;
+  } catch (error) {
+    console.error('Server fetch failed:', error);
+    throw error;
+  }
+}
+
+// Example POST request with data
+export async function submitFormAction(formData: FormData) {
+  try {
+    const data = {
+      name: formData.get('name'),
+      email: formData.get('email')
+    };
+    
+    const response = await AxiosInstance.post('/api/users', data);
+    return response.data;
+  } catch (error) {
+    console.error('Form submission failed:', error);
+    throw error;
+  }
+}
+```
+
+For more examples of server-side fetching, see `src/actions/auth.ts`.
+
+## Which One to Use?
+
+- **Use client-side fetching** (`useAPI` hook or `ClientAxiosInstance`) for:
+  - Interactive UI components that need real-time data
+  - Data that changes frequently
+  - User-specific content that requires client-side state
+  - Forms and mutations in client components
+
+- **Use server-side fetching** (`AxiosInstance`) for:
+  - Initial page data loading (improves SEO and performance)
+  - Protected API routes that require server-side authentication
+  - Server Actions processing form submissions
+  - Data pre-fetching for Server Components
+
+## 👤 Role Access Control
+
+There is a `src/middleware.ts` file. In that file, there are three arrays:
+
+- `publicRoutes` – contains the routes that are accessible to all users
+- `userRoutes` – contains the routes that are accessible to users with the role of `user`
+- `adminOnlyRoutes` – contains the routes that are only accessible to users with the role of `admin`
+
+**Admins** can access both **user** and **admin** routes. This means they can also access features like portfolio
+optimization, etc.
+
+### 🔄 Dynamic Route Patterns
+
+The middleware now supports dynamic route patterns using two special syntaxes:
+
+- `:parameter` – matches a single URL segment (e.g., `/users/:id` matches `/users/123`)
+- `:path*` – matches multiple nested segments (e.g., `/dashboard/:path*` matches `/dashboard/reports/quarterly/2025`)
+
+Examples of properly formatted route patterns:
+
+```javascript
+// Single parameter routes
+"/users/:id"           // Matches: /users/123
+"/profile/:username"   // Matches: /profile/johndoe
+
+// Nested/wildcard routes
+"/dashboard/:path*"    // Matches: /dashboard, /dashboard/stats, /dashboard/reports/annual
+"/settings/:section"   // Matches: /settings/account, /settings/privacy
+```
+
+### 🔐 Adding New Routes
+
+When introducing a new route, add it to the appropriate array in `middleware.ts`:
+
+1. If the route should be accessible without authentication, add it to `publicRoutes`
+2. If the route should be accessible to regular users, add it to `userRoutes`
+3. If the route should be accessible only to admins, add it to `adminOnlyRoutes`
+
+Be sure to include any dynamic variations of the route using the pattern syntax above.
+
+### 🚦 Route Access Logic
+
+- Public routes: Accessible to everyone
+- User routes: Require authentication with any role
+- Admin routes: Require authentication with admin role
+
+Remember that users with the admin role can access all routes in both `userRoutes` and `adminOnlyRoutes`.
+
+---
+
 ## Best Practices
 
 1. **Use semantic colors** instead of hardcoded hex values
@@ -340,6 +572,13 @@ You can also use opacity modifiers:
 
 By following these guidelines, you'll maintain a consistent, accessible, and visually appealing UI that adapts well to
 both light and dark modes.
+
+---
+
+## ⚠️Important
+
+- Before pull requests please make sure the app is building fine
+- Make sure to run `npm run lint`, `npm run build && npm start` will run correnclt without any issues
 
 ---
 

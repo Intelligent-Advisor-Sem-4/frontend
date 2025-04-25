@@ -14,8 +14,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import {Gender} from "@/lib/types";
-import {registerSchema} from "@/actions/authTypes";
+
+import {Gender} from "@/lib/types/user";
+import {registerSchema} from "@/lib/types/register";
 
 // Type for the form data based on the Zod schema
 type RegisterFormData = z.infer<typeof registerSchema>;

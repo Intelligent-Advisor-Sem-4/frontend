@@ -15,7 +15,7 @@ AxiosInstance.interceptors.request.use(
 
         // If token is present, add it to request's Authorization Header
         if (token) {
-            if (config.headers) config.headers.token = token;
+            if (config.headers) config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },
