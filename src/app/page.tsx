@@ -92,10 +92,10 @@ export default function Home() {
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Button size="lg" asChild>
-                                <a href="/auth/register">Get Started <ArrowUpRight className="ml-2 h-4 w-4"/></a>
+                                <Link href="/auth/register">Get Started <ArrowUpRight className="ml-2 h-4 w-4"/></Link>
                             </Button>
                             <Button variant="outline" size="lg" asChild>
-                                <a href="/dashboard">Demo Dashboard</a>
+                                <Link href="/dashboard">Demo Dashboard</Link>
                             </Button>
                         </div>
                     </div>
