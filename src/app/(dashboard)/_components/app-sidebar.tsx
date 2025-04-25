@@ -25,7 +25,7 @@ const data: SidebarData = {
 			items: [
 				{
 					title: "Price Forecast",
-					url: "/group-37/forecast",
+					url: "/forecast",
 				},
 				{
 					title: "Model Metrics",
