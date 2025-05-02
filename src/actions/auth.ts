@@ -50,6 +50,7 @@ export async function login(_previousState: string, formData: FormData): Promise
     }
 
     try {
+        console.log("env:", process.env.BACKEND_BASE_URL);
         const response = await AxiosInstance.post<LoginResponse>('/auth/login', {
             username,
             password
