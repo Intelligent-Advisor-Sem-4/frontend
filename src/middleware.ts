@@ -29,7 +29,9 @@ const userRoutes = [
 const adminOnlyRoutes = [
     "users",
     "/users/:id",
-    "/portfolio/:id",
+    "/assets/:symbol",
+    "/global-assets/lookup",
+    "/global-assets/:type",
     // Add more admin-only routes
 ];
 
@@ -83,7 +85,7 @@ export default async function middleware(req: NextRequest) {
     }
 
     // Redirect authenticated users away from login page
-    if (session?.sub && path === "/auth/login") {
+    if (session?.sub && (path === "/auth/login" || path === "/auth/register")) {
         return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
     }
 

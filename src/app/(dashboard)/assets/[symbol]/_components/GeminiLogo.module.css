@@ -1,0 +1,65 @@
+/* GeminiLogo.module.css */
+.logoContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.logoSvg {
+    width: 100%;
+    height: 100%;
+    animation: rotate 10s infinite cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.animatedPath {
+    animation: gradientMove 5s infinite linear;
+}
+
+.tooltipContent {
+    max-width: 250px;
+    text-align: center;
+    padding: 12px;
+    background: var(--muted);
+}
+
+.gradientText {
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: linear-gradient(45deg, #9168C0, #5684D1, #1BA1E3);
+    background-size: 200% 200%;
+    animation: gradientMove 5s infinite linear;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 4px;
+}
+
+.cautionText {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    30% { /* 3 seconds of a 10-second cycle */
+        transform: rotate(360deg);
+    }
+    100% { /* Hold this position until cycle restarts */
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes gradientMove {
+    0% {
+        background-position: 0 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0 50%;
+    }
+}

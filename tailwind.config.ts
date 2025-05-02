@@ -71,6 +71,8 @@ module.exports = {
                     4: "var(--color-chart-4)",
                     5: "var(--color-chart-5)",
                 },
+                up: "oklch(0.651 0.222 142.03)", // Green color for positive stock movement
+                down: "oklch(0.645 0.246 16.439)", // Red color for negative stock movement
             },
             borderRadius: {
                 lg: "var(--radius-lg)",
@@ -80,18 +82,53 @@ module.exports = {
             },
             keyframes: {
                 "accordion-down": {
-                    from: { height: "0" },
-                    to: { height: "var(--radix-accordion-content-height)" },
+                    from: {height: "0"},
+                    to: {height: "var(--radix-accordion-content-height)"},
                 },
                 "accordion-up": {
-                    from: { height: "var(--radix-accordion-content-height)" },
-                    to: { height: "0" },
+                    from: {height: "var(--radix-accordion-content-height)"},
+                    to: {height: "0"},
                 },
+                "stock-up": {
+                    '0%': {transform: 'translateY(0)'},
+                    '50%': {transform: 'translateY(-4px)'},
+                    '100%': {transform: 'translateY(0)'}
+                },
+                "stock-down": {
+                    '0%': {transform: 'translateY(0)'},
+                    '50%': {transform: 'translateY(4px)'},
+                    '100%': {transform: 'translateY(0)'}
+                }
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
+                "stock-up": "stock-up 1s ease-in-out",
+                "stock-down": "stock-down 1s ease-in-out"
             },
         },
     },
+    plugins: [
+        function ({addUtilities}: { addUtilities: (utilities: Record<string, Record<string, unknown>>) => void }) {
+            const newUtilities = {
+                '.up': {
+                    color: 'var(--color-up, oklch(0.651 0.222 142.03))',
+                    fontWeight: '500',
+                    '&::before': {
+                        content: '"▲ "',
+                        display: 'inline-block'
+                    }
+                },
+                '.down': {
+                    color: 'var(--color-down, oklch(0.645 0.246 16.439))',
+                    fontWeight: '500',
+                    '&::before': {
+                        content: '"▼ "',
+                        display: 'inline-block'
+                    }
+                }
+            }
+            addUtilities(newUtilities)
+        }
+    ]
 }

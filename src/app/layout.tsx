@@ -31,7 +31,7 @@ export default function RootLayout({
                 {children}
             </ThemeProvider>
         </div>
-        <ToastContainer/>
+        <ToastContainer position={'bottom-right'} pauseOnFocusLoss={false} autoClose={3000}/>
         </body>
         </html>
     );

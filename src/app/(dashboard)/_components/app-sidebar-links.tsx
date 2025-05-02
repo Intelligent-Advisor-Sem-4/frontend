@@ -6,92 +6,20 @@ import {NavGuides} from "@/app/(dashboard)/_components/nav-guides";
 import {Role} from "@/lib/types/user";
 import {SidebarData} from "@/app/(dashboard)/_utils/types";
 import {
-    Bot,
     ChartCandlestickIcon,
-    DollarSign,
+    Earth,
     FolderGit2,
     LayoutGrid,
     PieChart,
-    Scale,
-    Settings2,
     Users
 } from "lucide-react";
 
 const userSidebar: SidebarData = {
     navMain: [
         {
-            title: "Dashboard",
-            url: "/dashboard",
-            icon: LayoutGrid,
-        },
-        {
-            title: "Market Prediction",
-            url: "/group-37",
-            icon: Bot,
-            items: [
-                {
-                    title: "Price Forecast",
-                    url: "/group-37/forecast",
-                },
-                {
-                    title: "Model Metrics",
-                    url: "/group-37/metrics",
-                },
-            ],
-        },
-        {
-            title: "Budget Tracking",
-            url: "/group-38",
-            icon: DollarSign,
-            items: [
-                {
-                    title: "Categorization",
-                    url: "/group-38/categorization",
-                },
-                {
-                    title: "Budget Analysis",
-                    url: "/group-38/analysis",
-                },
-            ],
-        },
-        {
             title: "Portfolio Optimization",
-            url: "/portfolio",
+            url: "/dashboard/portfolio",
             icon: PieChart,
-        },
-        {
-            title: "Risk & Compliance",
-            url: "/group-40",
-            icon: Scale,
-            items: [
-                {
-                    title: "Risk Analysis",
-                    url: "/group-40/risk",
-                },
-                {
-                    title: "Fairness & Bias",
-                    url: "/group-40/fairness",
-                },
-                {
-                    title: "Explainability",
-                    url: "/group-40/explain",
-                },
-            ],
-        },
-        {
-            title: "Settings",
-            url: "/settings",
-            icon: Settings2,
-            items: [
-                {
-                    title: "General",
-                    url: "/settings/general",
-                },
-                {
-                    title: "Team",
-                    url: "/settings/team",
-                },
-            ],
         },
     ],
     guides: [
@@ -116,98 +44,31 @@ const adminSidebar: SidebarData = {
             icon: LayoutGrid,
         },
         {
-            title: "Market Prediction",
-            url: "/group-37",
-            icon: Bot,
+            title: "Global Assets",
+            url: '/assets',
+            icon: Earth,
+            initiallyExpanded: true,
             items: [
                 {
-                    title: "Price Forecast",
-                    url: "/group-37/forecast",
+                    title: "Discover",
+                    url: "/global-assets/lookup",
                 },
                 {
-                    title: "Model Metrics",
-                    url: "/group-37/metrics",
-                },
-            ],
-        },
-        {
-            title: "Budget Tracking",
-            url: "/group-38",
-            icon: DollarSign,
-            items: [
-                {
-                    title: "Categorization",
-                    url: "/group-38/categorization",
+                    title: "Top Screens",
+                    url: "/global-assets/top-screens",
                 },
                 {
-                    title: "Budget Analysis",
-                    url: "/group-38/analysis",
+                    title: "Sectors",
+                    url: "/global-assets/sectors",
                 },
-            ],
-        },
-        {
-            title: "Portfolio Optimization",
-            url: "/portfolio",
-            icon: PieChart,
-        },
-        {
-            title: "Risk & Compliance",
-            url: "/group-40",
-            icon: Scale,
-            items: [
-                {
-                    title: "Risk Analysis",
-                    url: "/group-40/risk",
-                },
-                {
-                    title: "Fairness & Bias",
-                    url: "/group-40/fairness",
-                },
-                {
-                    title: "Explainability",
-                    url: "/group-40/explain",
-                },
-            ],
-        },
-        {
-            title: "Stock symbols",
-            url: '/stock-symbol',
-            icon: ChartCandlestickIcon,
-            items: [
-                {
-                    title: "All symbols",
-                    url: "/stock-symbol/all",
-                },
-                {
-                    title: "Risks",
-                    url: "/stock-symbol/risk",
-                },
-                {
-                    title: "Blacklist",
-                    url: "/stock-symbol/blacklist",
-                }
+
             ]
         },
         {
-            title: "Compliance rules",
-            url: '/compliance-rules',
-            icon: Scale,
-        },
-        {
-            title: "Settings",
-            url: "/settings",
-            icon: Settings2,
-            items: [
-                {
-                    title: "General",
-                    url: "/settings/general",
-                },
-                {
-                    title: "Team",
-                    url: "/settings/team",
-                },
-            ],
-        },
+            title: "System Assets",
+            url: '/assets/db',
+            icon: ChartCandlestickIcon,
+        }
     ],
     guides: [
         {

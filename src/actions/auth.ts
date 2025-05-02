@@ -56,8 +56,8 @@ export async function login(_previousState: string, formData: FormData): Promise
             password
         });
 
-        console.log(response);
         await createSession(response.data);
+        console.log(`User ${username} logged in successfully`);
 
         // Redirect to dashboard after successful login
         redirect('/dashboard');

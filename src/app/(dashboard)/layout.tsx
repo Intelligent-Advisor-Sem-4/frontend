@@ -10,13 +10,13 @@ import {SidebarSkeleton} from "@/app/(dashboard)/_components/sidebar-skeleton";
 
 export default function DashboardLayout({children}: { children: React.ReactNode }) {
     return (
-        <SidebarProvider>
+        <SidebarProvider className={'h-screen w-screen flex overscroll-auto'}>
             <Suspense fallback={<SidebarSkeleton/>}>
                 <AppSidebar/>
             </Suspense>
             <SidebarInset>
                 <header
-                    className="flex h-16 shrink-0 items-center justify-between transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+                    className="flex h-16 items-center justify-between transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 border-b-1 shadow-sm">
                     <div className="flex items-center gap-2 px-4">
                         <SidebarTrigger className="-ml-1"/>
                     </div>
@@ -37,7 +37,15 @@ export default function DashboardLayout({children}: { children: React.ReactNode 
                         </Button>
                     </div>
                 </header>
-                {children}
+                <div className="flex-1 overflow-auto">
+                    {children}
+                    {/*<footer>*/}
+                    {/*    <Separator/>*/}
+                    {/*    <div className="flex items-center justify-center px-4 py-6 text-sm text-muted-foreground">*/}
+                    {/*        <span>© 2024 - Sem 4 Group J</span>*/}
+                    {/*    </div>*/}
+                    {/*</footer>*/}
+                </div>
             </SidebarInset>
         </SidebarProvider>
     )

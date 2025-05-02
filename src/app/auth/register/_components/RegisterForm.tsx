@@ -92,7 +92,7 @@ function RegisterForm() {
                     <p className="mt-2">You can now login to your account.</p>
                 </div>
                 <Button asChild className="w-full">
-                    <a href="/login">Go to Login</a>
+                    <a href="/auth/login">Go to Login</a>
                 </Button>
             </div>
         );

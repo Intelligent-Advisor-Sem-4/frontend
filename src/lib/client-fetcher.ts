@@ -1,20 +1,16 @@
 import axios from "axios";
-import {getCurrentUser} from "@/actions/auth";
+import {BACKEND_BASE_URL} from "@/lib/const";
 
 // Axios Interceptor Instance
 const AxiosInstance = axios.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: BACKEND_BASE_URL,
+    withCredentials: false  // This ensures cookies are sent with every request
 });
 
 // Request Interceptor
 AxiosInstance.interceptors.request.use(
     async (config) => {
-        const token = (await getCurrentUser())?.token;
-
-        // If token is present, add it to request's Authorization Header
-        if (token) {
-            if (config.headers) config.headers.token = token;
-        }
+        // No need to manually add token as it's automatically sent via cookies
         return config;
     },
     (error) => {
