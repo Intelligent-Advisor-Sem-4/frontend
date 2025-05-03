@@ -1,4 +1,4 @@
-import StockDashboard from "../../_components/stock-dashboard"
+import StockDashboard from "./_components/stock-dashboard"
 
 export default function Page() {
   return (
