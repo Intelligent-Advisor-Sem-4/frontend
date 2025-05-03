@@ -2,19 +2,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { format } from "date-fns"
+import {ModelMetadataType} from "@/lib/types/stock_prediction";
 
 interface ModelMetadataProps {
-  metadata: {
-    modelType: string
-    version: string
-    trainedOn: string
-    accuracy: number
-    maeScore: number
-    r2Score: number
-    features: string[]
-    lastUpdated: string
-    trainingDataPoints: number
-  }
+  metadata: ModelMetadataType
 }
 
 export default function ModelMetadata({ metadata }: ModelMetadataProps) {

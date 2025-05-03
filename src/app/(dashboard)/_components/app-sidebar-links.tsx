@@ -7,7 +7,7 @@ import {Role} from "@/lib/types/user";
 import {SidebarData} from "@/app/(dashboard)/_utils/types";
 import {
     ChartCandlestickIcon,
-    Earth,
+    Earth, Eye,
     FolderGit2,
     LayoutGrid,
     PieChart,
@@ -21,6 +21,11 @@ const userSidebar: SidebarData = {
             url: "/dashboard/portfolio",
             icon: PieChart,
         },
+        {
+            title: "Stock Market Prediction",
+            url: "/dashboard/stockmarketprediction",
+            icon: Eye,
+        }
     ],
     guides: [
         {
