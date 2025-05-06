@@ -285,7 +285,7 @@ const NewsSection = ({
                     >
                         <ScanText size={18}/>
                         Sentiment Analysis
-                        <GeminiLogo width="1.4rem" height="1.4rem" model={"Gemini 1.5 Flash"}/>
+                        <GeminiLogo model={"Gemini 1.5 Flash"}/>
                     </motion.h3>
 
                     <motion.div
