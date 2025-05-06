@@ -11,7 +11,10 @@ const Page = () => {
     if (isLoading) return <p>Loading message...</p>;
     if (error) return <p>Error: {error.message}</p>;
 
-    return <div>{message}</div>;
+    return <div>
+        <h1>Test Page</h1>
+        {message}
+    </div>;
 };
 
 export default Page;
