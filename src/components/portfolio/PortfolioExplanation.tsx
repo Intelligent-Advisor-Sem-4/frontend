@@ -5,6 +5,7 @@ import { OptimizedPortfolioResult } from "@/lib/types/profile";
 import { Sparkles } from "lucide-react";
 import Markdown from "react-markdown";
 import { getPortfolioExplanation } from "@/actions/profile";
+import GeminiLogo from "@/app/(dashboard)/assets/[symbol]/_components/GeminiLogo"
 
 interface PortfolioExplanationProps {
   portfolioData: OptimizedPortfolioResult;
@@ -59,12 +60,14 @@ export default function PortfolioExplanation({ portfolioData }: PortfolioExplana
         <CardTitle className="flex items-center gap-3 text-2xl font-bold">
         <Sparkles className="h-6 w-6 color-blue" />
           Explanation
+          <div><GeminiLogo className="h-4 w-4" /></div>
+          
         </CardTitle>
       </CardHeader>
 
       <CardContent>
         {loading && (
-          <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="flex flex-col items-center justify-center space-y-4 ">
             <div className="text-lg font-medium">thinking...</div>
             <div className="typing-dots">
               <span>.</span>

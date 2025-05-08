@@ -222,7 +222,7 @@
   .typing-dots span {
     width: 8px;
     height: 8px;
-    background-color: #4f46e5; /* Customize the color */
+    background-color:  oklch(0.547 0.246 262.866);; /* Customize the color */
     border-radius: 50%;
     animation: typing 1.5s infinite ease-in-out;
   }
