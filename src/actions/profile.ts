@@ -28,7 +28,7 @@ export async function optimizePortfolio(
         const data = optimizePortfolioSchema.parse(rawData);
 
 
-        const result = await AxiosInstance.post("/api/profile/optimize_portfolio", data);
+        const result = await AxiosInstance.post("/profile/optimize_portfolio", data);
 
         return {
             success: true,
