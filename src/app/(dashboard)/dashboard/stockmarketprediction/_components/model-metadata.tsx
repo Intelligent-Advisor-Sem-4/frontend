@@ -38,17 +38,17 @@ export default function ModelMetadata({ metadata }: ModelMetadataProps) {
           <Separator />
           <div>
             <p className="text-sm font-medium text-muted-foreground mb-2">Training Data Points</p>
-            <p className="text-lg font-semibold">{metadata.trainingDataPoints.toLocaleString()}</p>
+            {/* <p className="text-lg font-semibold">{metadata.trainingDataPoints.toLocaleString()}</p> */}
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground mb-2">Features Used</p>
-            <div className="flex flex-wrap gap-2">
+            {/* <div className="flex flex-wrap gap-2">
               {metadata.features.map((feature, index) => (
                 <div key={index} className="rounded-full bg-muted px-3 py-1 text-xs">
                   {feature}
                 </div>
               ))}
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>
@@ -58,13 +58,13 @@ export default function ModelMetadata({ metadata }: ModelMetadataProps) {
           <CardDescription>Accuracy and error metrics</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div>
+          {/* <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium">Accuracy</p>
               <p className="text-sm font-medium">{metadata.accuracy}%</p>
             </div>
             <Progress value={metadata.accuracy} className="h-2" />
-          </div>
+          </div> */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium">Mean Absolute Error (MAE)</p>
@@ -76,9 +76,9 @@ export default function ModelMetadata({ metadata }: ModelMetadataProps) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium">R² Score</p>
-              <p className="text-sm font-medium">{metadata.r2Score.toFixed(2)}</p>
+              {/* <p className="text-sm font-medium">{metadata.r2Score.toFixed(2)}</p> */}
             </div>
-            <Progress value={metadata.r2Score * 100} className="h-2" />
+            {/* <Progress value={metadata.r2Score * 100} className="h-2" /> */}
             <p className="text-xs text-muted-foreground mt-1">
               Proportion of variance explained by the model (1.0 is perfect)
             </p>

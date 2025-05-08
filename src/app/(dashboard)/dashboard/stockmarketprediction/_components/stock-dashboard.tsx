@@ -17,15 +17,21 @@ import {getStockData, getPredictionData, getModelMetadata} from "@/lib/data"
 import {exportToCSV} from "@/lib/export"
 import {PredictionData, StockData, ModelMetadataType} from "@/lib/types/stock_prediction";
 import {DateRange} from "react-day-picker";
+import { number } from "zod"
 
 type companyType = {
     value: string
     label: string
 }
 
+const formatDate = (date: Date) => {
+    return date.toLocaleDateString("en-CA"); // "YYYY-MM-DD" format
+};
+
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
 
 export default function StockDashboard() {
-    const [selectedCompany, setSelectedCompany] = useState("AAPL")
+    const [selectedCompany, setSelectedCompany] = useState<string>("")
     const [dateRange, setDateRange] = useState<DateRange>({
         from: new Date(new Date().setDate(new Date().getDate() - 30)),
         to: new Date(),
@@ -34,32 +40,71 @@ export default function StockDashboard() {
     const [predictionData, setPredictionData] = useState<PredictionData | null>(null)
     const [modelMetadata, setModelMetadata] = useState<ModelMetadataType | null>(null)
     const [activeTab, setActiveTab] = useState("overview")
+    const [sevchange,setSevchange] = useState<number|null>(null)
+    const [isLoading, setIsLoading] = useState(false);
+    
 
-    const companies: companyType[] = [
-        {value: "AAPL", label: "Apple Inc."},
-        {value: "MSFT", label: "Microsoft Corporation"},
-        {value: "GOOGL", label: "Alphabet Inc."},
-        {value: "AMZN", label: "Amazon.com, Inc."},
-        {value: "META", label: "Meta Platforms, Inc."},
-        {value: "TSLA", label: "Tesla, Inc."},
-        {value: "NVDA", label: "NVIDIA Corporation"},
-        {value: "JPM", label: "JPMorgan Chase & Co."},
-    ]
+    const [companies, setCompanies] = useState<companyType[]>([]);
 
     useEffect(() => {
-        if (!dateRange.from || !dateRange.to) return;
+        const fetchCompanies = async () => {
+            try {
+                const response = await fetch(`${BASE_URL}/get-active-symbols`);
+                const data = await response.json();
+                setCompanies(data.symbols);
+                setSelectedCompany(data.symbols[0].value);
+            } catch (error) {
+                console.error("Error fetching company symbols:", error);
+            }
+        };
+
+        fetchCompanies();
+    }, []);
+
+    useEffect(() => {
+        if (!dateRange.from || !dateRange.to || selectedCompany==="") return;
 
         // Fetch stock data based on selected company and date range
-        const data = getStockData(selectedCompany, dateRange.from, dateRange.to);
-        setStockData(data);
+        const fetchStockData = async () => {
+            setIsLoading(true); // Show loading popup
+            try {
+            const response = await fetch(`${BASE_URL}/V2/get-predicted-prices`, {
+                method: "POST",
+                headers: {
+                "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    starting_date: formatDate(dateRange.from ?? new Date()),
+                    ending_date: formatDate(dateRange.to ?? new Date()),
+                ticker_symbol: selectedCompany,
+                }),
+            });
+            const data = await response.json();
+            setStockData(data.stockData);
+            setModelMetadata(data.modelMetadata);
+            setPredictionData(data.predictionData)
+            if (data.predictionData && data.stockData && data.stockData.history.length > 0 && data.predictionData.predictions.length > 0) {
+                const lastPrediction = data.predictionData.predictions[data.predictionData.predictions.length - 1].predicted;
+                const lastPrice = data.stockData.history[data.stockData.history.length - 1].price;
+                const percentageChange = ((lastPrediction - lastPrice) / lastPrice) * 100;
+                setSevchange(percentageChange);
+            }
+            } catch (error) {
+            console.error("Error fetching stock data:", error);
+            } finally {
+                setIsLoading(false); // Hide loading popup
+            }
+        };
+
+        fetchStockData();
 
         // Fetch prediction data
-        const predictions = getPredictionData(selectedCompany, dateRange.to);
-        setPredictionData(predictions);
+        // const predictions = getPredictionData(selectedCompany, dateRange.to);
+        // setPredictionData(predictions);
 
         // Fetch model metadata
-        const metadata = getModelMetadata(selectedCompany);
-        setModelMetadata(metadata);
+        // const metadata = getModelMetadata(selectedCompany);
+        // setModelMetadata(metadata);
     }, [selectedCompany, dateRange]);
 
     const handleExport = () => {
@@ -68,6 +113,14 @@ export default function StockDashboard() {
 
     return (
         <div className="container mx-auto py-6 px-4 md:px-6">
+            {isLoading && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-background/70">
+                <div className="bg-card text-card-foreground rounded-xl shadow-xl p-6 flex flex-col items-center space-y-4">
+                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                <p className="text-lg font-medium">Loading...</p>
+                </div>
+            </div>
+            )}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Stock Prediction Dashboard</h1>
@@ -75,18 +128,20 @@ export default function StockDashboard() {
                         prices</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <Select value={selectedCompany} onValueChange={setSelectedCompany}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select company"/>
-                        </SelectTrigger>
-                        <SelectContent>
-                            {companies.map((company) => (
-                                <SelectItem key={company.value} value={company.value}>
-                                    {company.label} ({company.value})
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    {selectedCompany && (
+                        <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select company"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                {companies.map((company) => (
+                                    <SelectItem key={company.value} value={company.value}>
+                                        {company.label} ({company.value})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
                     <DateRangePicker
                         date={dateRange}
                         setDate={(newRange: DateRange) => setDateRange(newRange)}
@@ -98,7 +153,7 @@ export default function StockDashboard() {
                 </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <div className="space-y-1">
@@ -121,6 +176,11 @@ export default function StockDashboard() {
                             <CardTitle className="text-sm font-medium">Predicted Price (7d)</CardTitle>
                             <CardDescription>ML model prediction</CardDescription>
                         </div>
+                        <Badge variant={(sevchange ?? 0) > 0 ? "success" : "destructive"}
+                               className="ml-auto">
+                            {(sevchange ?? 0) > 0 ? "+" : ""}
+                            {(sevchange ?? 0).toFixed(2)}%
+                        </Badge>
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -131,34 +191,20 @@ export default function StockDashboard() {
                                 </TooltipTrigger>
                                 <TooltipContent>
                                     <p>Prediction based on {modelMetadata?.modelType} model</p>
-                                    <p>Accuracy: {modelMetadata?.accuracy}%</p>
+                                    {/* <p>Accuracy: {modelMetadata?.accuracy}%</p> */}
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">${predictionData?.nextWeek.predicted.toFixed(2)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        {/* <p className="text-xs text-muted-foreground mt-1">
                             Confidence: {predictionData?.nextWeek.confidenceLow.toFixed(2)} -{" "}
                             {predictionData?.nextWeek.confidenceHigh.toFixed(2)}
-                        </p>
+                        </p> */}
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <div className="space-y-1">
-                            <CardTitle className="text-sm font-medium">Predicted Price (30d)</CardTitle>
-                            <CardDescription>ML model prediction</CardDescription>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">${predictionData?.nextMonth.predicted.toFixed(2)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            Confidence: {predictionData?.nextMonth.confidenceLow.toFixed(2)} -{" "}
-                            {predictionData?.nextMonth.confidenceHigh.toFixed(2)}
-                        </p>
-                    </CardContent>
-                </Card>
+           
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">

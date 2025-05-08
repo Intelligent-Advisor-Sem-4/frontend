@@ -15,8 +15,8 @@ interface ChartDataItem {
     formattedDate: string
     price: number | null
     predicted: number | null
-    confidenceLow: number | null
-    confidenceHigh: number | null
+    // confidenceLow: number | null
+    // confidenceHigh: number | null
 }
 
 export default function StockPredictionChart({historicalData, predictionData}: StockPredictionChartProps) {
@@ -28,8 +28,8 @@ export default function StockPredictionChart({historicalData, predictionData}: S
             ...item,
             formattedDate: format(new Date(item.date), "MMM dd"),
             predicted: null,
-            confidenceLow: null,
-            confidenceHigh: null,
+            // confidenceLow: null,
+            // confidenceHigh: null,
         }))
 
         const predictions = predictionData.map((item) => ({
@@ -37,8 +37,8 @@ export default function StockPredictionChart({historicalData, predictionData}: S
             formattedDate: format(new Date(item.date), "MMM dd"),
             price: null, // No actual price for future dates
             predicted: item.predicted,
-            confidenceLow: item.confidenceLow,
-            confidenceHigh: item.confidenceHigh,
+            // confidenceLow: item.confidenceLow,
+            // confidenceHigh: item.confidenceHigh,
         }))
 
         // Combine the data sets
@@ -79,10 +79,10 @@ export default function StockPredictionChart({historicalData, predictionData}: S
                     activeDot={{r: 5}}
                     name="Predicted"
                 />
-                <Area type="monotone" dataKey="confidenceLow" stackId="1" stroke="none" fill="#10b98120"
+                {/* <Area type="monotone" dataKey="confidenceLow" stackId="1" stroke="none" fill="#10b98120"
                       name="Lower Bound"/>
                 <Area type="monotone" dataKey="confidenceHigh" stackId="1" stroke="none" fill="#10b98120"
-                      name="Upper Bound"/>
+                      name="Upper Bound"/> */}
             </ComposedChart>
         </ResponsiveContainer>
     )

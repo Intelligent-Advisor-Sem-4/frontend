@@ -19,8 +19,8 @@ export interface StockData {
 export interface PredictionItem {
   date: string;
   predicted: number;
-  confidenceLow: number;
-  confidenceHigh: number;
+  // confidenceLow: number;
+  // confidenceHigh: number;
   change: number;
 }
 
@@ -29,7 +29,6 @@ export interface PredictionData {
   ticker: string;
   predictions: PredictionItem[];
   nextWeek: PredictionItem;
-  nextMonth: PredictionItem;
 }
 
 // Interface for model metadata
@@ -37,10 +36,8 @@ export interface ModelMetadataType {
   modelType: string;
   version: string;
   trainedOn: string;
-  accuracy: number;
   maeScore: number;
-  r2Score: number;
-  features: string[];
+  // features: string[];
   lastUpdated: string;
-  trainingDataPoints: number;
+  // trainingDataPoints: number;
 }
