@@ -16,22 +16,24 @@ import ModelMetadata from "./model-metadata"
 //import {getStockData, getPredictionData, getModelMetadata} from "@/lib/data"
 import {exportToCSV} from "@/lib/export"
 import {PredictionData, StockData, ModelMetadataType} from "@/lib/types/stock_prediction";
+import {BACKEND_BASE_URL} from "@/lib/const";
 // import { number } from "zod"
 
 type companyType = {
     value: string
     label: string
 }
+
 interface DateRange {
-  from: Date | null;
-  to: Date | null;
+    from: Date | null;
+    to: Date | null;
 }
 
 const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-CA"); // "YYYY-MM-DD" format
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
+const BASE_URL = BACKEND_BASE_URL;
 
 export default function StockDashboard() {
     const [selectedCompany, setSelectedCompany] = useState<string>("")
@@ -43,9 +45,9 @@ export default function StockDashboard() {
     const [predictionData, setPredictionData] = useState<PredictionData | null>(null)
     const [modelMetadata, setModelMetadata] = useState<ModelMetadataType | null>(null)
     const [activeTab, setActiveTab] = useState("overview")
-    const [sevchange,setSevchange] = useState<number|null>(null)
+    const [sevchange, setSevchange] = useState<number | null>(null)
     const [isLoading, setIsLoading] = useState(false);
-    
+
 
     const [companies, setCompanies] = useState<companyType[]>([]);
 
@@ -65,35 +67,35 @@ export default function StockDashboard() {
     }, []);
 
     useEffect(() => {
-        if (!dateRange.from || !dateRange.to || selectedCompany==="") return;
+        if (!dateRange.from || !dateRange.to || selectedCompany === "") return;
 
         // Fetch stock data based on selected company and date range
         const fetchStockData = async () => {
             setIsLoading(true); // Show loading popup
             try {
-            const response = await fetch(`${BASE_URL}/V2/get-predicted-prices`, {
-                method: "POST",
-                headers: {
-                "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    starting_date: formatDate(dateRange.from ?? new Date()),
-                    ending_date: formatDate(dateRange.to ?? new Date()),
-                ticker_symbol: selectedCompany,
-                }),
-            });
-            const data = await response.json();
-            setStockData(data.stockData);
-            setModelMetadata(data.modelMetadata);
-            setPredictionData(data.predictionData)
-            if (data.predictionData && data.stockData && data.stockData.history.length > 0 && data.predictionData.predictions.length > 0) {
-                const lastPrediction = data.predictionData.predictions[data.predictionData.predictions.length - 1].predicted;
-                const lastPrice = data.stockData.history[data.stockData.history.length - 1].price;
-                const percentageChange = ((lastPrediction - lastPrice) / lastPrice) * 100;
-                setSevchange(percentageChange);
-            }
+                const response = await fetch(`${BASE_URL}/V2/get-predicted-prices`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        starting_date: formatDate(dateRange.from ?? new Date()),
+                        ending_date: formatDate(dateRange.to ?? new Date()),
+                        ticker_symbol: selectedCompany,
+                    }),
+                });
+                const data = await response.json();
+                setStockData(data.stockData);
+                setModelMetadata(data.modelMetadata);
+                setPredictionData(data.predictionData)
+                if (data.predictionData && data.stockData && data.stockData.history.length > 0 && data.predictionData.predictions.length > 0) {
+                    const lastPrediction = data.predictionData.predictions[data.predictionData.predictions.length - 1].predicted;
+                    const lastPrice = data.stockData.history[data.stockData.history.length - 1].price;
+                    const percentageChange = ((lastPrediction - lastPrice) / lastPrice) * 100;
+                    setSevchange(percentageChange);
+                }
             } catch (error) {
-            console.error("Error fetching stock data:", error);
+                console.error("Error fetching stock data:", error);
             } finally {
                 setIsLoading(false); // Hide loading popup
             }
@@ -117,12 +119,14 @@ export default function StockDashboard() {
     return (
         <div className="container mx-auto py-6 px-4 md:px-6">
             {isLoading && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-background/70">
-                <div className="bg-card text-card-foreground rounded-xl shadow-xl p-6 flex flex-col items-center space-y-4">
-                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                <p className="text-lg font-medium">Loading...</p>
+                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-background/70">
+                    <div
+                        className="bg-card text-card-foreground rounded-xl shadow-xl p-6 flex flex-col items-center space-y-4">
+                        <div
+                            className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"/>
+                        <p className="text-lg font-medium">Loading...</p>
+                    </div>
                 </div>
-            </div>
             )}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
                 <div>
@@ -207,7 +211,7 @@ export default function StockDashboard() {
                         </p> */}
                     </CardContent>
                 </Card>
-           
+
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
