@@ -8,23 +8,25 @@ export async function createSession(loginResponse: LoginResponse) {
 
     // Set secure HTTP-only cookies instead of localStorage
     const cookieStore = await cookies();
+    const env = process.env.ENV;
+    console.log(`Setting cookies in ${env} environment`);
 
     cookieStore.set('token', token, {
         httpOnly: true,
-        secure: process.env.ENV === 'production',
+        secure: env === 'production',
         maxAge: 60 * 60 * 24, // 1 day
         path: '/',
         sameSite: 'strict',
-        // domain: process.env.ENV === 'production' ? "shancloudservice.com" : undefined,
+        domain: env === 'production' ? "shancloudservice.com" : undefined,
     });
 
     cookieStore.set('user', JSON.stringify(loginResponse), {
         httpOnly: true,
-        secure: process.env.ENV === 'production',
+        secure: env === 'production',
         maxAge: 60 * 60 * 24, // 1 day
         path: '/',
         sameSite: 'strict',
-        // domain: process.env.ENV === 'production' ? "shancloudservice.com" : undefined,
+        domain: env === 'production' ? "shancloudservice.com" : undefined,
     });
 }
 
