@@ -38,10 +38,10 @@ export default function ModelMetadata({ metadata }: ModelMetadataProps) {
           <Separator />
           <div>
             <p className="text-sm font-medium text-muted-foreground mb-2">Training Data Points</p>
-            {/* <p className="text-lg font-semibold">{metadata.trainingDataPoints.toLocaleString()}</p> */}
+            <p className="text-lg font-semibold">{metadata.trainingDataPoints.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground mb-2">Features Used</p>
+            {/* <p className="text-sm font-medium text-muted-foreground mb-2">Features Used</p> */}
             {/* <div className="flex flex-wrap gap-2">
               {metadata.features.map((feature, index) => (
                 <div key={index} className="rounded-full bg-muted px-3 py-1 text-xs">
@@ -68,7 +68,7 @@ export default function ModelMetadata({ metadata }: ModelMetadataProps) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium">Mean Absolute Error (MAE)</p>
-              <p className="text-sm font-medium">${metadata.maeScore.toFixed(2)}</p>
+              <p className="text-sm font-medium">{metadata.maeScore.toFixed(5)}</p>
             </div>
             <Progress value={100 - metadata.maeScore * 10} className="h-2" />
             <p className="text-xs text-muted-foreground mt-1">Average error in price predictions</p>

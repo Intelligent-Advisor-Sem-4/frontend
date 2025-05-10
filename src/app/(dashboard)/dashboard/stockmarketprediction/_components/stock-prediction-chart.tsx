@@ -15,8 +15,8 @@ interface ChartDataItem {
     formattedDate: string
     price: number | null
     predicted: number | null
-    // confidenceLow: number | null
-    // confidenceHigh: number | null
+    confidenceLow: number | null
+    confidenceHigh: number | null
 }
 
 export default function StockPredictionChart({historicalData, predictionData}: StockPredictionChartProps) {
@@ -28,8 +28,8 @@ export default function StockPredictionChart({historicalData, predictionData}: S
             ...item,
             formattedDate: format(new Date(item.date), "MMM dd"),
             predicted: null,
-            // confidenceLow: null,
-            // confidenceHigh: null,
+            confidenceLow: null,
+            confidenceHigh: null,
         }))
 
         const predictions = predictionData.map((item) => ({
@@ -37,8 +37,8 @@ export default function StockPredictionChart({historicalData, predictionData}: S
             formattedDate: format(new Date(item.date), "MMM dd"),
             price: null, // No actual price for future dates
             predicted: item.predicted,
-            // confidenceLow: item.confidenceLow,
-            // confidenceHigh: item.confidenceHigh,
+            confidenceLow: item.confidenceLow,
+            confidenceHigh: item.confidenceHigh,
         }))
 
         // Combine the data sets

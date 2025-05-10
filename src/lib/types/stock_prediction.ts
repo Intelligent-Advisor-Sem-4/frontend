@@ -19,8 +19,8 @@ export interface StockData {
 export interface PredictionItem {
   date: string;
   predicted: number;
-  // confidenceLow: number;
-  // confidenceHigh: number;
+  confidenceLow: number;
+  confidenceHigh: number;
   change: number;
 }
 
@@ -39,5 +39,5 @@ export interface ModelMetadataType {
   maeScore: number;
   // features: string[];
   lastUpdated: string;
-  // trainingDataPoints: number;
+  trainingDataPoints: number;
 }

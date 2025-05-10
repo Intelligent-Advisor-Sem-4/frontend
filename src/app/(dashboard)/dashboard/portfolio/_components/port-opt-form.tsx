@@ -52,6 +52,7 @@ import { cn } from "@/lib/utils";
 import { getCurrentUser } from "@/actions/auth";
 import { User } from "@/lib/types/user";
 import AxiosInstance from "@/lib/client-fetcher";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 //interfaces
 interface Ticker {
@@ -207,9 +208,16 @@ export default function PortfolioOptimizationPage() {
 
   //handlers
   const handleTickerSelect = (ticker: string) => {
-    if (!selectedTickers.includes(ticker)) {
-      setSelectedTickers([...selectedTickers, ticker]);
-    }
+    if (selectedTickers.includes(ticker)) return;
+
+    setSelectedTickers((prev) => {
+      if (prev.length < 5) {
+        return [...prev, ticker];
+      } else {
+        // Replace the oldest ticker with the new one
+        return [...prev.slice(1), ticker];
+      }
+    });
   };
 
   const handleRemoveTicker = (tickerToRemove: string) => {
@@ -243,9 +251,42 @@ export default function PortfolioOptimizationPage() {
     }
   };
 
-  if (error) return <div>Failed to load tickers</div>;
-  if (userError) return <div>Failed to fetch user data</div>;
-  if (userDataError) return <div>Failed to fetch user&#39;s budget data</div>;
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Failed to Load Tickers</AlertTitle>
+        <AlertDescription>
+          We couldn’t fetch your stock data. Please check your connection or try
+          again later.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  if (userError) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>User Data Error</AlertTitle>
+        <AlertDescription>
+          Something went wrong while fetching your account. Try reloading the
+          page.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  if (userDataError) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Budget Data Error</AlertTitle>
+        <AlertDescription>
+          Could not retrieve Excess Budget. Please check your account settings
+          or try again later.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -399,7 +440,11 @@ export default function PortfolioOptimizationPage() {
                         onValueChange={(value) => handleTickerSelect(value)}
                       >
                         <SelectTrigger className="bg-background">
-                          <SelectValue placeholder="Choose stocks to include in your portfolio" />
+                          <span className="text-muted-foreground text-sm">
+                            {selectedTickers.length < 5
+                              ? `Choose up to 5 stocks (${selectedTickers.length}/5 selected)`
+                              : "Maximum of 5 stocks selected"}
+                          </span>
                         </SelectTrigger>
                         <SelectContent>
                           {tickerData?.tickers
