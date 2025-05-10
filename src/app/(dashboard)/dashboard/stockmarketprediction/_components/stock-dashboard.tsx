@@ -17,6 +17,7 @@ import ModelMetadata from "./model-metadata"
 import {exportToCSV} from "@/lib/export"
 import {BACKEND_BASE_URL} from "@/lib/const"
 import {PredictionData, StockData, ModelMetadataType} from "@/lib/types/stock_prediction";
+import AxiosInstance from "@/lib/client-fetcher";
 // import { number } from "zod"
 
 type companyType = {
@@ -47,9 +48,9 @@ export default function StockDashboard() {
     const [activeTab, setActiveTab] = useState("overview")
     const [sevchange, setSevchange] = useState<number | null>(null)
     const [isLoading, setIsLoading] = useState(false);
-    const [isPredicting,setPredicting] = useState(false);
-    const [error,setError] = useState<string|null>(null);
-    const [dataerror,setDataerror] = useState<string|null>(null);
+    const [isPredicting, setPredicting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [dataerror, setDataerror] = useState<string | null>(null);
 
 
     const [companies, setCompanies] = useState<companyType[]>([]);
@@ -58,25 +59,18 @@ export default function StockDashboard() {
         const fetchCompanies = async () => {
             try {
                 setIsLoading(true);
-                console.log(`${BASE_URL}/get-active-symbols`)
-                const response = await fetch(`${BASE_URL}/get-active-symbols`);
-                if(response.ok){
-                    const data = await response.json();
-                    setCompanies(data.symbols);
-                    setSelectedCompany(data.symbols[0].value);
-                    // if(companies.length == 0){
-                    //     setError("No active symbols")
-                    // }
-                }else{
-                    setError("cannot get stock symbols")
-                }
-                setIsLoading(false)
+                const response = await AxiosInstance.get(`${BASE_URL}/get-active-symbols`);
+                const data = response.data;
+                setCompanies(data.symbols);
+                setSelectedCompany(data.symbols[0].value);
             } catch {
                 setError("Error fetching company symbols");
+            } finally {
+                setIsLoading(false);
             }
         };
 
-        fetchCompanies();
+        fetchCompanies().then();
     }, []);
 
     useEffect(() => {
@@ -97,7 +91,7 @@ export default function StockDashboard() {
                         ticker_symbol: selectedCompany,
                     }),
                 });
-                if(response.ok){
+                if (response.ok) {
                     const data = await response.json();
                     setStockData(data.stockData);
                     setModelMetadata(data.modelMetadata);
@@ -109,13 +103,12 @@ export default function StockDashboard() {
                         setSevchange(percentageChange);
                     }
 
+                } else {
+                    const result = await response.json();
+                    setDataerror(result.detail || "Resource not found");
+                    return;
                 }
-                else{
-                        const result = await response.json();
-                        setDataerror(result.detail || "Resource not found");
-                        return;
-                }
-                
+
             } catch {
                 console.error("Error fetching stock data");
             } finally {
@@ -137,13 +130,13 @@ export default function StockDashboard() {
     const handleExport = () => {
         exportToCSV(predictionData, `${selectedCompany}_predictions`)
     }
-    if(error){
+    if (error) {
         return (
             <div className="min-h-screen bg-background text-gray-100">
 
                 <div className="flex flex-col items-center justify-center h-[70vh]">
                     <p className="text-gray-300">{error}</p>
-                    </div>
+                </div>
 
             </div>
         )
@@ -161,8 +154,7 @@ export default function StockDashboard() {
 
             </div>
         )
-    }
-    else if (isPredicting) {
+    } else if (isPredicting) {
         return (
             <div className="min-h-screen bg-background text-gray-100">
 
@@ -174,165 +166,166 @@ export default function StockDashboard() {
 
             </div>
         )
-    }
-    else {
-    return (
-        <div className="container mx-auto py-6 px-4 md:px-6 relative">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Stock Prediction Dashboard</h1>
-                    <p className="text-muted-foreground">View historical data and ML-powered predictions for stock
-                        prices</p>
+    } else {
+        return (
+            <div className="container mx-auto py-6 px-4 md:px-6 relative">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">Stock Prediction Dashboard</h1>
+                        <p className="text-muted-foreground">View historical data and ML-powered predictions for stock
+                            prices</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        {selectedCompany && (
+                            <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Select company"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {companies.map((company) => (
+                                        <SelectItem key={company.value} value={company.value}>
+                                            {company.label} ({company.value})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
+                        <DateRangePicker
+                            date={dateRange}
+                            setDate={(newRange: DateRange) => setDateRange(newRange)}
+                        />
+                        <Button variant="outline" onClick={handleExport}>
+                            <Download className="mr-2 h-4 w-4"/>
+                            Export
+                        </Button>
+                    </div>
                 </div>
-                <div className="flex items-center gap-4">
-                    {selectedCompany && (
-                        <Select value={selectedCompany} onValueChange={setSelectedCompany}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Select company"/>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {companies.map((company) => (
-                                    <SelectItem key={company.value} value={company.value}>
-                                        {company.label} ({company.value})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
-                    <DateRangePicker
-                        date={dateRange}
-                        setDate={(newRange: DateRange) => setDateRange(newRange)}
-                    />
-                    <Button variant="outline" onClick={handleExport}>
-                        <Download className="mr-2 h-4 w-4"/>
-                        Export
-                    </Button>
-                </div>
-            </div>
-            {dataerror && (<div className="min-h-screen bg-background text-gray-100">
+                {dataerror && (<div className="min-h-screen bg-background text-gray-100">
 
-                <div className="flex flex-col items-center justify-center h-[70vh]">
-                    <p className="text-gray-300">{dataerror}</p>
+                    <div className="flex flex-col items-center justify-center h-[70vh]">
+                        <p className="text-gray-300">{dataerror}</p>
                     </div>
 
-            </div>)}
+                </div>)}
 
-            {!dataerror && (<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <div className="space-y-1">
-                            <CardTitle className="text-sm font-medium">Current Price</CardTitle>
-                            <CardDescription>Last trading day</CardDescription>
-                        </div>
-                        <Badge variant={(stockData?.priceChange ?? 0) > 0 ? "success" : "destructive"}
-                               className="ml-auto">
-                            {(stockData?.priceChange ?? 0) > 0 ? "+" : ""}
-                            {(stockData?.priceChange ?? 0).toFixed(2)}%
-                        </Badge>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">${stockData?.currentPrice.toFixed(2)}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <div className="space-y-1">
-                            <CardTitle className="text-sm font-medium">Predicted Price (7d)</CardTitle>
-                            <CardDescription>ML model prediction</CardDescription>
-                        </div>
-                        <Badge variant={(sevchange ?? 0) > 0 ? "success" : "destructive"}
-                               className="ml-auto">
-                            {(sevchange ?? 0) > 0 ? "+" : ""}
-                            {(sevchange ?? 0).toFixed(2)}%
-                        </Badge>
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                                        <Info className="h-4 w-4"/>
-                                        <span className="sr-only">Model info</span>
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Prediction based on {modelMetadata?.modelType} model</p>
-                                    {/* <p>Accuracy: {modelMetadata?.accuracy}%</p> */}
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">${predictionData?.nextWeek.predicted.toFixed(2)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            Confidence: {predictionData?.nextWeek.confidenceLow.toFixed(2)} -{" "}
-                            {predictionData?.nextWeek.confidenceHigh.toFixed(2)}
-                        </p>
-                    </CardContent>
-                </Card>
-
-            </div>)}
-
-            {!dataerror && (<Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-                <TabsList className="grid w-full grid-cols-3 md:w-auto">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="predictions">Predictions</TabsTrigger>
-                    <TabsTrigger value="model">Model Details</TabsTrigger>
-                </TabsList>
-                <TabsContent value="overview" className="space-y-6">
+                {!dataerror && (<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
                     <Card>
-                        <CardHeader>
-                            <CardTitle>Historical Stock Data</CardTitle>
-                            <CardDescription>{selectedCompany} stock price over the selected time
-                                period</CardDescription>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <div className="space-y-1">
+                                <CardTitle className="text-sm font-medium">Current Price</CardTitle>
+                                <CardDescription>Last trading day</CardDescription>
+                            </div>
+                            <Badge variant={(stockData?.priceChange ?? 0) > 0 ? "success" : "destructive"}
+                                   className="ml-auto">
+                                {(stockData?.priceChange ?? 0) > 0 ? "+" : ""}
+                                {(stockData?.priceChange ?? 0).toFixed(2)}%
+                            </Badge>
                         </CardHeader>
-                        <CardContent className="h-[400px]">
-                            {stockData && <StockHistoryChart data={stockData.history}/>}
+                        <CardContent>
+                            <div className="text-2xl font-bold">${stockData?.currentPrice.toFixed(2)}</div>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardHeader>
-                            <CardTitle>Trading Volume</CardTitle>
-                            <CardDescription>Daily trading volume for {selectedCompany}</CardDescription>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <div className="space-y-1">
+                                <CardTitle className="text-sm font-medium">Predicted Price (7d)</CardTitle>
+                                <CardDescription>ML model prediction</CardDescription>
+                            </div>
+                            <Badge variant={(sevchange ?? 0) > 0 ? "success" : "destructive"}
+                                   className="ml-auto">
+                                {(sevchange ?? 0) > 0 ? "+" : ""}
+                                {(sevchange ?? 0).toFixed(2)}%
+                            </Badge>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                                            <Info className="h-4 w-4"/>
+                                            <span className="sr-only">Model info</span>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Prediction based on {modelMetadata?.modelType} model</p>
+                                        {/* <p>Accuracy: {modelMetadata?.accuracy}%</p> */}
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                         </CardHeader>
-                        <CardContent className="h-[300px]">
-                            {stockData &&
-                                <StockHistoryChart data={stockData.history} dataKey="volume" chartType="bar"/>}
+                        <CardContent>
+                            <div className="text-2xl font-bold">${predictionData?.nextWeek.predicted.toFixed(2)}</div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Confidence: {predictionData?.nextWeek.confidenceLow.toFixed(2)} -{" "}
+                                {predictionData?.nextWeek.confidenceHigh.toFixed(2)}
+                            </p>
                         </CardContent>
                     </Card>
-                </TabsContent>
-                <TabsContent value="predictions" className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Price Predictions</CardTitle>
-                            <CardDescription>ML-powered price predictions with confidence intervals</CardDescription>
-                        </CardHeader>
-                        <CardContent className="h-[400px]">
-                            {predictionData && stockData && (
-                                <StockPredictionChart
-                                    historicalData={stockData.history.slice(-30)}
-                                    predictionData={predictionData.predictions}
-                                />
-                            )}
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Prediction Data</CardTitle>
-                            <CardDescription>Detailed prediction data for {selectedCompany}</CardDescription>
-                        </CardHeader>
-                        <CardContent>{predictionData &&
-                            <StockDataTable data={predictionData.predictions}/>}</CardContent>
-                        <CardFooter>
-                            <Button variant="outline" onClick={handleExport}>
-                                <Download className="mr-2 h-4 w-4"/>
-                                Export as CSV
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </TabsContent>
-                <TabsContent value="model" className="space-y-6">
-                    {modelMetadata && <ModelMetadata metadata={modelMetadata}/>}
-                </TabsContent>
-            </Tabs>)}
-        </div>
-    )
-}}
+
+                </div>)}
+
+                {!dataerror && (<Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
+                    <TabsList className="grid w-full grid-cols-3 md:w-auto">
+                        <TabsTrigger value="overview">Overview</TabsTrigger>
+                        <TabsTrigger value="predictions">Predictions</TabsTrigger>
+                        <TabsTrigger value="model">Model Details</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="overview" className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Historical Stock Data</CardTitle>
+                                <CardDescription>{selectedCompany} stock price over the selected time
+                                    period</CardDescription>
+                            </CardHeader>
+                            <CardContent className="h-[400px]">
+                                {stockData && <StockHistoryChart data={stockData.history}/>}
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Trading Volume</CardTitle>
+                                <CardDescription>Daily trading volume for {selectedCompany}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="h-[300px]">
+                                {stockData &&
+                                    <StockHistoryChart data={stockData.history} dataKey="volume" chartType="bar"/>}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                    <TabsContent value="predictions" className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Price Predictions</CardTitle>
+                                <CardDescription>ML-powered price predictions with confidence
+                                    intervals</CardDescription>
+                            </CardHeader>
+                            <CardContent className="h-[400px]">
+                                {predictionData && stockData && (
+                                    <StockPredictionChart
+                                        historicalData={stockData.history.slice(-30)}
+                                        predictionData={predictionData.predictions}
+                                    />
+                                )}
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Prediction Data</CardTitle>
+                                <CardDescription>Detailed prediction data for {selectedCompany}</CardDescription>
+                            </CardHeader>
+                            <CardContent>{predictionData &&
+                                <StockDataTable data={predictionData.predictions}/>}</CardContent>
+                            <CardFooter>
+                                <Button variant="outline" onClick={handleExport}>
+                                    <Download className="mr-2 h-4 w-4"/>
+                                    Export as CSV
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </TabsContent>
+                    <TabsContent value="model" className="space-y-6">
+                        {modelMetadata && <ModelMetadata metadata={modelMetadata}/>}
+                    </TabsContent>
+                </Tabs>)}
+            </div>
+        )
+    }
+}
