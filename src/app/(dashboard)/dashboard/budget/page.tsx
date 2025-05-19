@@ -8,7 +8,6 @@ import {LineChart, PieChart} from "@/app/(dashboard)/dashboard/budget/_component
 import {BudgetReports} from "@/app/(dashboard)/dashboard/budget/_components/budget-reports"
 import {BudgetGoals} from "@/app/(dashboard)/dashboard/budget/_components/budget-goals"
 import {BudgetPredictions} from "@/app/(dashboard)/dashboard/budget/_components/budget-predictions"
-import {AIChat} from "@/app/(dashboard)/dashboard/budget/_components/ai-chat"
 import {DollarSign, TrendingUp, PieChartIcon, Target} from "lucide-react"
 import {
     CategoryBreakdown,
@@ -285,9 +284,6 @@ export default function Home() {
                     <BudgetPredictions userId={userId}/>
                 </TabsContent>
             </Tabs>
-
-            {/* Floating AI Chat Button */}
-            <AIChat/>
         </div>
     )
 }
