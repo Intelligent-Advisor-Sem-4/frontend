@@ -278,7 +278,7 @@ export function BudgetReports({userId}: BudgetReportsProps) {
 
     if (loading) {
         return (
-            <div className={'min-h-screen'}>
+            <div className={'min-h-screen flex items-center justify-center'}>
                 <LoadingAnimation/>
             </div>
         )
