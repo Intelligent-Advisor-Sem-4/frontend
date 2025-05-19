@@ -9,7 +9,6 @@ import {
     ChartCandlestickIcon, DollarSign,
     Earth,
     FolderGit2,
-    LayoutGrid,
     PieChart,
     Users,
     ChartColumnIncreasing
@@ -17,11 +16,6 @@ import {
 
 const userSidebar: SidebarData = {
     navMain: [
-        {
-            title: "Dashboard",
-            url: "/dashboard",
-            icon: LayoutGrid,
-        },
         {
             title: "Global Market",
             url: '/assets',
@@ -79,11 +73,6 @@ const userSidebar: SidebarData = {
 
 const adminSidebar: SidebarData = {
     navMain: [
-        {
-            title: "Dashboard",
-            url: "/dashboard",
-            icon: LayoutGrid,
-        },
         {
             title: "Global Assets",
             url: '/assets',
