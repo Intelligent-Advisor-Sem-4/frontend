@@ -1,227 +1,133 @@
-"use client";
+'use client';
 
-import React, {useState} from "react";
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
-import {createTransaction, categorizeTransaction, TransactionCreate} from "@/lib/budget-lib/budget_api";
-import {useBalance} from "@/context/BalanceContext"; // Assuming BalanceContext.tsx is in the same directory or adjust path
-import {toast, Id as ToastId} from 'react-toastify'; // Import Id type for toastId
-import 'react-toastify/dist/ReactToastify.css'; // Import default CSS for react-toastify
+import React, {JSX} from 'react';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+import {Button} from '@/components/ui/button';
+import {PlusCircle} from 'lucide-react';
+import {toast} from 'react-toastify';
+import {createStockAction} from "@/app/(dashboard)/global-assets/[type]/_utils/actions";
+import {formatMarketCap} from "@/app/(dashboard)/global-assets/[type]/_utils/utils";
+import RiskBadge from "@/app/(dashboard)/_components/RiskBadge";
 
-interface AddTransactionDialogProps {
-    userId: string;
-}
+import {Asset} from "@/app/(dashboard)/assets/[symbol]/_utils/definitions";
 
-// Helper to format date to YYYY-MM-DD for input type="date"
-const formatDateForInput = (date: Date): string => {
-    return date.toISOString().split('T')[0];
-};
 
-export function AddTransactionDialog({userId}: AddTransactionDialogProps) {
-    const [isOpen, setIsOpen] = useState(false);
-    const {refetch: refetchBalance} = useBalance(); // Get refetch function from context
+const AddStock = ({stock}: { stock: Asset }): JSX.Element => {
+    const [isOpen, setIsOpen] = React.useState(false);
 
-    const initialTransactionState: Omit<TransactionCreate, 'user_id' | 'category' | 'created_at'> & {
-        category?: string,
-        created_at?: string
-    } = {
-        date: formatDateForInput(new Date()), // Format date for input
-        reason: "",
-        amount: 0,
-        type: "expense" // Default to expense
-    };
-
-    const [newTransaction, setNewTransaction] = useState(initialTransactionState);
-    const [error, setError] = useState<string | null>(null);
-
-    const handleAddTransaction = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null); // Clear previous errors
-
-        if (!newTransaction.reason || newTransaction.amount <= 0 || !newTransaction.date) {
-            setError("Please fill all required fields and ensure amount is greater than 0.");
-            toast.error("Please fill all required fields and ensure amount is greater than 0.", {autoClose: 3000});
-            return;
-        }
-
-        let toastId: ToastId | null = null; // Variable to store the toast ID
+    const handleAddStock = async () => {
+        // Create loading toast
+        const toastId = toast.loading(`Adding ${stock.ticker}...`, {
+            pauseOnFocusLoss: false,
+            autoClose: false,
+        });
 
         try {
-            // Show loading toast
-            toastId = toast.loading(`Adding transaction for ${newTransaction.reason}...`, {
-                // pauseOnFocusLoss: false, // As per user example, but generally good to keep true
-                // autoClose: false, // isLoading: true handles this implicitly for loading
-            });
+            const result = await createStockAction(stock.ticker);
 
-            const transactionToCreate: TransactionCreate = {
-                ...newTransaction,
-                user_id: userId,
-                amount: Number(newTransaction.amount),
-                date: new Date(newTransaction.date).toISOString().replace("T", " ").split(".")[0],
-                created_at: new Date().toISOString().replace("T", " ").split(".")[0],
-                type: newTransaction.type as "expense" | "income",
-                category: "", // Will be set by categorizeTransaction
-            };
-
-            // Step 1: Categorize transaction
-            const categoryReceived = await categorizeTransaction(
-                transactionToCreate.reason,
-                transactionToCreate.amount,
-                transactionToCreate.type
-            );
-            transactionToCreate.category = categoryReceived.category;
-
-            // Step 2: Create transaction
-            await createTransaction(transactionToCreate);
-
-            // Step 3: Refetch balance
-            await refetchBalance();
-
-            // Step 4: Update toast to success, reset form, and close dialog
-            if (toastId) {
+            if (result.success) {
+                // Update toast on success
                 toast.update(toastId, {
-                    render: "Transaction added successfully! 🎉",
-                    type: "success",
-                    isLoading: false,
-                    autoClose: 3000, // Auto close success toast after 3 seconds
-                    pauseOnFocusLoss: true,
-                });
-            }
-            setNewTransaction(initialTransactionState);
-            setIsOpen(false);
-
-        } catch (err) {
-            console.error("Transaction creation failed:", err);
-            setError("Failed to create transaction. Please try again."); // Set form error if needed
-
-            // Update toast to error
-            if (toastId) {
-                toast.update(toastId, {
-                    render: "Failed to add transaction. Please try again. 🤯",
-                    type: "error",
-                    isLoading: false,
-                    autoClose: 5000, // Auto close error toast after 5 seconds
-                    pauseOnFocusLoss: true,
+                    render: result.message,
+                    type: 'success',
+                    autoClose: 2000,
+                    isLoading: false
                 });
             } else {
-                // If toastId was not set (e.g., error before loading toast shown, though unlikely here)
-                toast.error("Failed to add transaction. Please try again. 🤯", {autoClose: 5000});
+                // Update toast on error
+                toast.update(toastId, {
+                    render: result.message,
+                    type: 'error',
+                    autoClose: 3000,
+                    isLoading: false
+                });
             }
+        } catch (error) {
+            // Handle unexpected errors
+            console.error('Error adding stock:', error);
+            toast.update(toastId, {
+                render: `Failed to add ${stock.ticker}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                type: 'error',
+                autoClose: 3000,
+                isLoading: false
+            });
         }
+
+        setIsOpen(false);
     };
 
-    // Handle changes to form inputs
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value, type} = e.target;
-        setNewTransaction(prev => ({
-            ...prev,
-            [name]: type === 'number' ? parseFloat(value) : value,
-        }));
+    // Safely format price with null handling
+    const formatPrice = (price: number | null): string => {
+        return price !== null ? `$${price.toFixed(2)}` : 'N/A';
     };
 
-    // Handle type selection (Expense/Income)
-    const handleTypeSelect = (type: "expense" | "income") => {
-        setNewTransaction(prev => ({...prev, type}));
+    // Safely format PE ratio with null handling
+    const formatPE = (pe: number | null): string => {
+        return pe !== null ? pe.toFixed(2) : 'N/A';
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                    Add Transaction
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-card text-card-foreground rounded-lg shadow-lg">
-                <DialogHeader>
-                    <DialogTitle className="text-xl font-semibold text-primary">Add New Transaction</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleAddTransaction} className="space-y-6 p-2">
-                    {/* Transaction Type Tabs */}
-                    <div>
-                        <Label className="mb-2 block text-sm font-medium text-foreground">Type</Label>
-                        <div className="grid grid-cols-2 gap-2 rounded-md bg-muted p-1">
-                            <Button
-                                type="button"
-                                onClick={() => handleTypeSelect("expense")}
-                                className={`w-full ${newTransaction.type === "expense"
-                                    ? "bg-red-500 hover:bg-red-600 text-white dark:bg-red-700 dark:hover:bg-red-800"
-                                    : "bg-transparent hover:bg-muted-foreground/20 text-foreground"
-                                } transition-colors duration-150 py-2 px-4 rounded-md text-sm font-medium`}
-                            >
-                                Expense
-                            </Button>
-                            <Button
-                                type="button"
-                                onClick={() => handleTypeSelect("income")}
-                                className={`w-full ${newTransaction.type === "income"
-                                    ? "bg-green-500 hover:bg-green-600 text-white dark:bg-green-700 dark:hover:bg-green-800"
-                                    : "bg-transparent hover:bg-muted-foreground/20 text-foreground"
-                                } transition-colors duration-150 py-2 px-4 rounded-md text-sm font-medium`}
-                            >
-                                Income
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* Date Input */}
-                    <div>
-                        <Label htmlFor="date" className="mb-2 block text-sm font-medium text-foreground">Date</Label>
-                        <Input
-                            id="date"
-                            name="date"
-                            type="date"
-                            value={newTransaction.date}
-                            onChange={handleChange}
-                            className="w-full bg-input border-border text-foreground rounded-md focus:ring-primary focus:border-primary"
-                            required
-                        />
-                    </div>
-
-                    {/* Amount Input */}
-                    <div>
-                        <Label htmlFor="amount"
-                               className="mb-2 block text-sm font-medium text-foreground">Amount</Label>
-                        <Input
-                            id="amount"
-                            name="amount"
-                            type="number"
-                            min="0.01" // Ensure amount is positive
-                            step="0.01"
-                            value={newTransaction.amount}
-                            onChange={handleChange}
-                            placeholder="0.00"
-                            className="w-full bg-input border-border text-foreground rounded-md focus:ring-primary focus:border-primary"
-                            required
-                        />
-                    </div>
-
-                    {/* Description Input */}
-                    <div>
-                        <Label htmlFor="reason"
-                               className="mb-2 block text-sm font-medium text-foreground">Description</Label>
-                        <Input
-                            id="reason"
-                            name="reason"
-                            value={newTransaction.reason}
-                            onChange={handleChange}
-                            placeholder="e.g., Groceries, Salary"
-                            className="w-full bg-input border-border text-foreground rounded-md focus:ring-primary focus:border-primary"
-                            required
-                        />
-                    </div>
-
-                    {/* Error Message Display */}
-                    {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
-
-                    {/* Submit Button */}
-                    <Button type="submit"
-                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2.5 rounded-md transition-colors duration-150">
-                        Add Transaction
+        <>
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <DialogTrigger>
+                    <Button className="h-8">
+                        <PlusCircle className="h-4 w-4 mr-1"/> Add to system
                     </Button>
-                </form>
-            </DialogContent>
-        </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add Stock to System</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to add {stock.ticker} ({stock.name}) to the system?
+                            This will make it available for risk analysis and monitoring.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-4 py-4">
+                        <div className="space-y-1">
+                            <p className="text-sm font-medium text-gray-500">Symbol</p>
+                            <p className="font-medium">{stock.ticker}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-sm font-medium text-gray-500">Risk Level</p>
+                            <RiskBadge score={stock.db?.risk_score ?? null}/>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-sm font-medium text-gray-500">Market Cap</p>
+                            <p>{stock.market_cap !== null ? formatMarketCap(stock.market_cap) : 'N/A'}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-sm font-medium text-gray-500">Price</p>
+                            <p>{formatPrice(stock.last_price)}</p>
+                        </div>
+                        {stock.exchange && (
+                            <div className="space-y-1">
+                                <p className="text-sm font-medium text-gray-500">Exchange</p>
+                                <p>{stock.exchange}</p>
+                            </div>
+                        )}
+                        {stock.trailing_pe !== null && (
+                            <div className="space-y-1">
+                                <p className="text-sm font-medium text-gray-500">P/E Ratio</p>
+                                <p>{formatPE(stock.trailing_pe)}</p>
+                            </div>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+                        <Button onClick={handleAddStock}>Add Stock</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
-}
+};
+
+export default AddStock;
