@@ -10,7 +10,12 @@ import {BudgetGoals} from "@/app/(dashboard)/dashboard/budget/_components/budget
 import {BudgetPredictions} from "@/app/(dashboard)/dashboard/budget/_components/budget-predictions"
 import {AIChat} from "@/app/(dashboard)/dashboard/budget/_components/ai-chat"
 import {DollarSign, TrendingUp, PieChartIcon, Target} from "lucide-react"
-import {CategoryBreakdown, getTransactionsByCategory, getTransactionSummary} from "@/lib/budget-lib/budget_api" // Import our API functions
+import {
+    CategoryBreakdown,
+    getTransactionsByCategory,
+    getTransactionSummary,
+    TransactionSummary
+} from "@/lib/budget-lib/budget_api" // Import our API functions
 import {getCurrentUser} from "@/actions/auth"
 import {
     calculateBalanceTrendScore,
@@ -19,19 +24,7 @@ import {
     calculateSpendingScore
 } from "@/app/(dashboard)/dashboard/budget/_utils/utils"
 import {AddTransactionDialog} from "@/app/(dashboard)/dashboard/budget/_components/AddTransactionDialog";
-
-export interface TransactionSummary {
-    income: number;
-    expense: number;
-    balance: number;
-    previousIncome: number;
-    previousExpense: number;
-    previousBalance: number;
-    transactions: {
-        date: string;
-        balance: number;
-    }[];
-}
+import LoadingAnimation from "@/app/(dashboard)/_components/LoadingAnimation";
 
 export default function Home() {
     const [activeTab, setActiveTab] = useState("dashboard")
@@ -41,9 +34,9 @@ export default function Home() {
         income: 0,
         expense: 0,
         balance: 0,
-        previousIncome: 0,
-        previousExpense: 0,
-        previousBalance: 0,
+        previous_income: 0,
+        previous_expense: 0,
+        previous_balance: 0,
         transactions: []
     })
     const [categories, setCategories] = useState<CategoryBreakdown[][]>([[], []])
@@ -59,15 +52,7 @@ export default function Home() {
 
                 // Fetch summary data
                 const summary = await getTransactionSummary(user!.user_id)
-                setSummaryData({
-                    income: summary.income,
-                    expense: summary.expense,
-                    balance: summary.balance,
-                    previousIncome: summary.previous_income,
-                    previousExpense: summary.previous_expense,
-                    previousBalance: summary.previous_balance,
-                    transactions: summary.transactions
-                })
+                setSummaryData(summary)
 
                 // Fetch categories
                 const categoryData = await getTransactionsByCategory(user!.user_id)
@@ -148,15 +133,7 @@ export default function Home() {
 
 
                 <TabsContent value="dashboard" className="space-y-6">
-                    {isLoading ? <div className="min-h-screen bg-background text-foreground">
-
-                            <div className="flex flex-col items-center justify-center h-[70vh]">
-                                <div
-                                    className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-                                <p className="text-foreground">Loading your financial data...</p>
-                            </div>
-
-                        </div> :
+                    {isLoading ? <LoadingAnimation/> :
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <Card>
@@ -168,7 +145,7 @@ export default function Home() {
                                     <CardContent>
                                         <div className="text-3xl font-bold text-white">${summaryData.balance}</div>
                                         <div className="text-sm text-green-400 mt-1"
-                                             style={summaryData.balance > summaryData.previousBalance ? {color: "green"} : {color: "red"}}>{summaryData.previousBalance === 0 ? "" : `${handleSummaryValues(summaryData.balance, summaryData.previousBalance)} from last month`}</div>
+                                             style={summaryData.balance > summaryData.previous_balance ? {color: "green"} : {color: "red"}}>{summaryData.previous_balance === 0 ? "" : `${handleSummaryValues(summaryData.balance, summaryData.previous_balance)} from last month`}</div>
                                     </CardContent>
                                 </Card>
                                 <Card>
@@ -180,7 +157,7 @@ export default function Home() {
                                     <CardContent>
                                         <div className="text-3xl font-bold text-white">${summaryData.income}</div>
                                         <div className="text-sm text-green-400 mt-1"
-                                             style={summaryData.income > summaryData.previousIncome ? {color: "green"} : {color: "red"}}>{summaryData.previousIncome === 0 ? "" : `${handleSummaryValues(summaryData.income, summaryData.previousIncome)} from last month`}</div>
+                                             style={summaryData.income > summaryData.previous_income ? {color: "green"} : {color: "red"}}>{summaryData.previous_income === 0 ? "" : `${handleSummaryValues(summaryData.income, summaryData.previous_income)} from last month`}</div>
                                     </CardContent>
                                 </Card>
                                 <Card>
@@ -192,7 +169,7 @@ export default function Home() {
                                     <CardContent>
                                         <div className="text-3xl font-bold text-white">${summaryData.expense}</div>
                                         <div className="text-sm text-green-400 mt-1"
-                                             style={summaryData.expense <= summaryData.previousExpense ? {color: "green"} : {color: "red"}}>{summaryData.previousExpense === 0 ? "" : `${handleSummaryValues(summaryData.expense, summaryData.previousExpense)} from last month`}</div>
+                                             style={summaryData.expense <= summaryData.previous_expense ? {color: "green"} : {color: "red"}}>{summaryData.previous_expense === 0 ? "" : `${handleSummaryValues(summaryData.expense, summaryData.previous_expense)} from last month`}</div>
                                     </CardContent>
                                 </Card>
                             </div>
