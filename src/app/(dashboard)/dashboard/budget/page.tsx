@@ -133,7 +133,11 @@ export default function Home() {
 
 
                 <TabsContent value="dashboard" className="space-y-6">
-                    {isLoading ? <LoadingAnimation/> :
+                    {isLoading ?
+                        <div className={'w-full h-screen'}>
+                            <LoadingAnimation/>
+                        </div>
+                        :
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <Card>
