@@ -1,28 +1,27 @@
 'use client'
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import {useRouter} from "next/navigation";
+import {Button} from "@/components/ui/button";
+import {ScrollArea} from "@/components/ui/scroll-area";
 import {useEffect, useState} from "react";
-import { useDebounce } from "use-debounce";
-import { SearchResult } from "../global-assets/lookup/_utils/definitions";
+import {useDebounce} from "use-debounce";
+import {SearchResult} from "../global-assets/lookup/_utils/definitions";
 import {searchYahooFinance} from "@/app/(dashboard)/global-assets/lookup/_utils/actions";
-import { Popover } from "@radix-ui/react-popover";
+import {Popover} from "@radix-ui/react-popover";
 import {PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { Loader2, Search, X} from "lucide-react";
+import {Input} from "@/components/ui/input";
+import {Loader2, Search, X} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import {Badge} from "@/components/ui/badge";
 
-function HeaderSearchBar({ initialQuery = '', className = '' }: { initialQuery?: string, className?: string }) {
-    const [searchQuery, setSearchQuery] = useState(initialQuery);
+function HeaderSearchBar({className = ''}: { className?: string }) {
+    const [searchQuery, setSearchQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
-    const searchParams = useSearchParams();
 
     // Get the first value from the array returned by useDebounce
     const [debouncedQuery] = useDebounce(searchQuery, 1000);
@@ -78,9 +77,6 @@ function HeaderSearchBar({ initialQuery = '', className = '' }: { initialQuery?:
     };
 
     const handleClearSearch = () => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete("query");
-        router.push(`?${params.toString()}`, { scroll: false });
         setSearchQuery("");
         setIsOpen(false);
     }
@@ -97,9 +93,11 @@ function HeaderSearchBar({ initialQuery = '', className = '' }: { initialQuery?:
                             className="w-full h-9 pl-9 pr-8 text-sm focus-visible:ring-1"
                         />
                         {isLoading ? (
-                            <Loader2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin"/>
+                            <Loader2
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin"/>
                         ) : (
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
+                            <Search
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
                         )}
                         {searchQuery && (
                             <Button
@@ -148,7 +146,7 @@ function HeaderSearchResults({
         );
     }
 
-    const { quotes = [], news = [] } = data || {};
+    const {quotes = [], news = []} = data || {};
     const hasResults = quotes.length > 0 || news.length > 0;
 
     if (!hasResults) {
@@ -200,7 +198,8 @@ function HeaderSearchResults({
                             >
                                 <div className="flex gap-2">
                                     {item.thumbnail && (
-                                        <div className="relative w-10 h-10 flex-shrink-0 bg-muted rounded overflow-hidden">
+                                        <div
+                                            className="relative w-10 h-10 flex-shrink-0 bg-muted rounded overflow-hidden">
                                             <Image
                                                 src={item.thumbnail}
                                                 alt={item.title}
@@ -217,7 +216,8 @@ function HeaderSearchResults({
                                             {item.relatedTickers && item.relatedTickers.length > 0 && (
                                                 <div className="flex gap-1">
                                                     {item.relatedTickers.slice(0, 1).map((ticker) => (
-                                                        <Badge key={ticker} variant="outline" className="text-xs px-1 py-0 h-4">
+                                                        <Badge key={ticker} variant="outline"
+                                                               className="text-xs px-1 py-0 h-4">
                                                             {ticker}
                                                         </Badge>
                                                     ))}

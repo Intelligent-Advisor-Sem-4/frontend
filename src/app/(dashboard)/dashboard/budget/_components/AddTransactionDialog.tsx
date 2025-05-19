@@ -5,9 +5,11 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
+// We will remove the Select components as per the request
+// import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {createTransaction, categorizeTransaction, TransactionCreate} from "@/lib/budget-lib/budget_api";
 import {useBalance} from "@/context/BalanceContext"; // Assuming BalanceContext.tsx is in the same directory or adjust path
-import {toast, Id as ToastId} from 'react-toastify'; // Import Id type for toastId
+import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Import default CSS for react-toastify
 
 interface AddTransactionDialogProps {
@@ -42,29 +44,23 @@ export function AddTransactionDialog({userId}: AddTransactionDialogProps) {
 
         if (!newTransaction.reason || newTransaction.amount <= 0 || !newTransaction.date) {
             setError("Please fill all required fields and ensure amount is greater than 0.");
-            toast.error("Please fill all required fields and ensure amount is greater than 0.", {autoClose: 3000});
+            toast.error("Please fill all required fields and ensure amount is greater than 0.");
             return;
         }
 
-        let toastId: ToastId | null = null; // Variable to store the toast ID
+        const transactionToCreate: TransactionCreate = {
+            ...newTransaction,
+            user_id: userId,
+            amount: Number(newTransaction.amount),
+            // API expects date in 'YYYY-MM-DD HH:MM:SS' format or similar, ensure this matches your backend
+            // Using ISOString and preparing it. Adjust if your backend needs a different exact format.
+            date: new Date(newTransaction.date).toISOString().replace("T", " ").split(".")[0],
+            created_at: new Date().toISOString().replace("T", " ").split(".")[0],
+            type: newTransaction.type as "expense" | "income",
+            category: "", // Will be set by categorizeTransaction
+        };
 
-        try {
-            // Show loading toast
-            toastId = toast.loading(`Adding transaction for ${newTransaction.reason}...`, {
-                // pauseOnFocusLoss: false, // As per user example, but generally good to keep true
-                // autoClose: false, // isLoading: true handles this implicitly for loading
-            });
-
-            const transactionToCreate: TransactionCreate = {
-                ...newTransaction,
-                user_id: userId,
-                amount: Number(newTransaction.amount),
-                date: new Date(newTransaction.date).toISOString().replace("T", " ").split(".")[0],
-                created_at: new Date().toISOString().replace("T", " ").split(".")[0],
-                type: newTransaction.type as "expense" | "income",
-                category: "", // Will be set by categorizeTransaction
-            };
-
+        const promise = async () => {
             // Step 1: Categorize transaction
             const categoryReceived = await categorizeTransaction(
                 transactionToCreate.reason,
@@ -77,39 +73,26 @@ export function AddTransactionDialog({userId}: AddTransactionDialogProps) {
             await createTransaction(transactionToCreate);
 
             // Step 3: Refetch balance
-            await refetchBalance();
+            refetchBalance(); // Use await if refetchBalance returns a promise and you need to wait
 
-            // Step 4: Update toast to success, reset form, and close dialog
-            if (toastId) {
-                toast.update(toastId, {
-                    render: "Transaction added successfully! 🎉",
-                    type: "success",
-                    isLoading: false,
-                    autoClose: 3000, // Auto close success toast after 3 seconds
-                    pauseOnFocusLoss: true,
-                });
-            }
+            // Step 4: Reset form and close dialog on success
             setNewTransaction(initialTransactionState);
             setIsOpen(false);
+        };
 
-        } catch (err) {
-            console.error("Transaction creation failed:", err);
-            setError("Failed to create transaction. Please try again."); // Set form error if needed
-
-            // Update toast to error
-            if (toastId) {
-                toast.update(toastId, {
-                    render: "Failed to add transaction. Please try again. 🤯",
-                    type: "error",
-                    isLoading: false,
-                    autoClose: 5000, // Auto close error toast after 5 seconds
-                    pauseOnFocusLoss: true,
-                });
-            } else {
-                // If toastId was not set (e.g., error before loading toast shown, though unlikely here)
-                toast.error("Failed to add transaction. Please try again. 🤯", {autoClose: 5000});
+        toast.promise(
+            promise(),
+            {
+                pending: 'Adding transaction...',
+                success: 'Transaction added successfully! 🎉',
+                error: 'Failed to add transaction. Please try again. 🤯'
             }
-        }
+        ).catch(err => {
+            // The promise itself might reject, or an error within it.
+            // toast.promise handles errors from the promise, but you can log them too.
+            console.error("Transaction creation failed:", err);
+            // setError("Failed to create transaction"); // This could be displayed in the form if needed
+        });
     };
 
     // Handle changes to form inputs
