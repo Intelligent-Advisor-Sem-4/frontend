@@ -1,6 +1,6 @@
 "use client"
 
-import {useEffect, useState} from "react"
+import {useState} from "react"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Progress} from "@/components/ui/progress"
@@ -13,10 +13,7 @@ import {DollarSign, TrendingUp, PieChartIcon, Target} from "lucide-react"
 import {
     CategoryBreakdown,
     getTransactionsByCategory,
-    getTransactionSummary,
-    TransactionSummary
 } from "@/lib/budget-lib/budget_api" // Import our API functions
-import {getCurrentUser} from "@/actions/auth"
 import {
     calculateBalanceTrendScore,
     calculateOverallScore,
@@ -25,76 +22,66 @@ import {
 } from "@/app/(dashboard)/dashboard/budget/_utils/utils"
 import {AddTransactionDialog} from "@/app/(dashboard)/dashboard/budget/_components/AddTransactionDialog";
 import LoadingAnimation from "@/app/(dashboard)/_components/LoadingAnimation";
+import {useBalance} from "@/context/BalanceContext"; // Import the custom context hook
+import {useEffect} from "react";
+import {getCurrentUser} from "@/actions/auth";
 
 export default function Home() {
     const [activeTab, setActiveTab] = useState("dashboard")
-    const [isLoading, setIsLoading] = useState(true);
-    const [userId, setUserId] = useState<string>("") // You'll need to get this from your auth system
-    const [summaryData, setSummaryData] = useState<TransactionSummary>({
-        income: 0,
-        expense: 0,
-        balance: 0,
-        previous_income: 0,
-        previous_expense: 0,
-        previous_balance: 0,
-        transactions: []
-    })
+    const [userId, setUserId] = useState<string>("")
     const [categories, setCategories] = useState<CategoryBreakdown[][]>([[], []])
 
+    // Use the balance context instead of manual fetching
+    const {data: summaryData, isLoading, refetch} = useBalance();
+
     useEffect(() => {
-        const fetchData = async () => {
-            setIsLoading(true); // Set loading to true when starting to fetch
-            // In a real app, you'd get the user ID from your auth system
-            const user = await getCurrentUser()
+        const fetchCategories = async () => {
+            if (!summaryData) return;
 
             try {
-                setUserId(user!.user_id)
-
-                // Fetch summary data
-                const summary = await getTransactionSummary(user!.user_id)
-                setSummaryData(summary)
-
-                // Fetch categories
-                const categoryData = await getTransactionsByCategory(user!.user_id)
-                setCategories(categoryData)
-
+                // We still need to fetch categories separately
+                const categoryData = await getTransactionsByCategory(userId);
+                setCategories(categoryData);
             } catch (error) {
-                console.error("Failed to fetch data:", error)
-            } finally {
-                setIsLoading(false); // Set loading to false when done (whether success or error)
+                console.error("Failed to fetch categories:", error);
             }
-        }
+        };
 
-        fetchData().then()
-    }, [])
+        if (userId) {
+            fetchCategories();
+        }
+    }, [userId, summaryData]);
+
+    // Set userId when summaryData is available (assuming userId comes from getCurrentUser in the context)
+    useEffect(() => {
+        const initUser = async () => {
+            try {
+                const user = await getCurrentUser();
+                if (user) {
+                    setUserId(user.user_id);
+                }
+            } catch (error) {
+                console.error("Failed to get current user:", error);
+            }
+        };
+
+        initUser();
+    }, []);
 
     const handleSummaryValues = (val: number, val2: number) => {
-        if (val2 == 0) {
+        if (val2 === 0) {
             return ""
         }
         if (val > val2) {
-            return "+" + ((val2 - val) / val2 * 100).toFixed(2) + "%"
+            return "+" + ((val - val2) / val2 * 100).toFixed(2) + "%"
         }
         return ((val2 - val) / val2 * 100).toFixed(2) + "%"
     }
 
-    // if (isLoading) {
-    //     return (
-    //         <div className="min-h-screen bg-background text-foreground">
-
-    //             <div className="flex flex-col items-center justify-center h-[70vh]">
-    //                 <div
-    //                     className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-    //                 <p className="text-foreground">Loading your financial data...</p>
-    //             </div>
-    //         </div>
-    //     )
-    // }
-
     return (
         <div className="min-h-screen bg-background text-foreground py-6 px-8">
             <Tabs defaultValue="dashboard" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <div className={'flex gap-4'}>
+                <div className="flex gap-4">
                     <TabsList className="w-full">
                         <TabsTrigger
                             value="dashboard"
@@ -126,15 +113,15 @@ export default function Home() {
                         </TabsTrigger>
                     </TabsList>
 
-                    <div className={'flex justify-end mb-4'}>
-                        <AddTransactionDialog userId={userId}/>
+                    <div className="flex justify-end mb-4">
+                        <AddTransactionDialog userId={userId} onTransactionAdded={refetch}/>
                     </div>
                 </div>
 
 
                 <TabsContent value="dashboard" className="space-y-6">
-                    {isLoading ?
-                        <div className={'w-full h-screen'}>
+                    {isLoading || !summaryData ?
+                        <div className="w-full h-screen">
                             <LoadingAnimation/>
                         </div>
                         :
