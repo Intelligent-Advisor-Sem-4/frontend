@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import {Download, ExternalLink, Info} from 'lucide-react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {fetchStockPrediction} from "@/app/(dashboard)/dashboard/stockmarketpredi
 import ModelMetadata from "@/app/(dashboard)/dashboard/stockmarketprediction/_components/model-metadata";
 import Link from "next/link";
 import {Skeleton} from "@/components/ui/skeleton";
+import PredictionLoading from "@/app/(dashboard)/assets/[symbol]/_components/PredictionLoading";
 
 interface PredictionSectionProps {
     ticker: string;
@@ -29,16 +30,24 @@ const PredictionSection = ({ticker, asset, isAdmin, inDb}: PredictionSectionProp
     const [dataError, setDataError] = useState<string | null>(null);
     const [sevChange, setSevChange] = useState<number | null>(null);
 
-    // Calculate date range (last 30 days)
-    const today = new Date();
-    const fromDate = new Date(today);
-    fromDate.setDate(today.getDate() - 31);
-    const toDate = new Date(today);
-    toDate.setDate(today.getDate() - 1);
+    // Calculate date range using useMemo to stabilize references
+    const {fromDate, toDate, formatDate} = useMemo(() => {
+        const today = new Date();
+        const from = new Date(today);
+        from.setDate(today.getDate() - 31);
+        const to = new Date(today);
+        to.setDate(today.getDate() - 1);
 
-    const formatDate = (date: Date) => {
-        return date.toLocaleDateString("en-CA"); // "YYYY-MM-DD" format
-    };
+        const formatter = (date: Date) => {
+            return date.toLocaleDateString("en-CA"); // "YYYY-MM-DD" format
+        };
+
+        return {
+            fromDate: from,
+            toDate: to,
+            formatDate: formatter
+        };
+    }, []);
 
     useEffect(() => {
         if (!inDb) return;
@@ -77,14 +86,19 @@ const PredictionSection = ({ticker, asset, isAdmin, inDb}: PredictionSectionProp
             }
         };
 
-        fetchData();
-    }, [ticker, inDb]);
+        fetchData().then();
+    }, [ticker, inDb, fromDate, toDate]);
 
     const handleExport = () => {
         if (predictionData) {
             exportToCSV(predictionData, `${ticker}_predictions`);
         }
     };
+
+    // Check if model is in pending/training state
+    if (inDb && asset.db?.status === 'Pending') {
+        return <PredictionLoading/>;
+    }
 
     if (!inDb) {
         return (
@@ -201,3 +215,4 @@ const PredictionSection = ({ticker, asset, isAdmin, inDb}: PredictionSectionProp
 };
 
 export default PredictionSection;
+
