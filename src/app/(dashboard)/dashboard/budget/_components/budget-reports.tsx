@@ -124,7 +124,6 @@ export function BudgetReports({userId}: BudgetReportsProps) {
                 if (cachedReport) {
                     reportData = JSON.parse(cachedReport);
                     if (reportData.transactions.length > 0) {
-                        console.log(reportData.transactions[0])
                         if (reportData.transactions[0].user_id != userId) {
                             // Note: Promise.all returns an array, but we only have one promise here
                             const [budgetReport] = await Promise.all([
